@@ -1,12 +1,17 @@
-import {BrowserRouter, Routes, Route} from "react-router-dom";
-import Navbar from "./components/Navbar.jsx";
+import { BrowserRouter } from 'react-router-dom';
+import AppRouter from './components/AppRouter.jsx';
+import {Provider} from "react-redux";
+import store from './infrastructure/redux/store.js'
 
 function App() {
     return (
-        <div className={''}>
-            <Navbar />
-        </div>
-    )
+        <Provider store={store}>
+            <BrowserRouter>
+                <AppRouter />
+            </BrowserRouter>
+        </Provider>
+
+    );
 }
 
-export default App
+export default App;

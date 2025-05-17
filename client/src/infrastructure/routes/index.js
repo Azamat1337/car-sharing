@@ -1,0 +1,11 @@
+export const LOGIN_ROUTE = '/login';
+export const REGISTRATION_ROUTE = '/registration';
+export const CAR_LIST_ROUTE = '/carlist';
+export const RENTAL_ROUTE = '/rental/:id';
+export const ADMIN_ROUTE = '/admin';
+export const HOME_ROUTE = '/';
+export const USER_ROUTE = '/profile';
+export const CAR_PAGE_ROUTE = '/car/:id'
+export const CHAT_ROUTE = '/chat/:id'
+export const BLOG_ROUTE = '/blog';
+export const POST_ROUTE = `${BLOG_ROUTE}/post/:id`;

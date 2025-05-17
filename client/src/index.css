@@ -1,7 +1,1 @@
-@import "tailwindcss";
-body {
-    margin: 0 auto;
-    max-width: 1280px !important;
-    background-color: #fff;
-    color: black;
-}
+@import 'tailwindcss';
