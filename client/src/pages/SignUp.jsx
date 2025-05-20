@@ -12,11 +12,11 @@ import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import Card from '@mui/material/Card';
 import { styled } from '@mui/material/styles';
-import { SitemarkIcon } from '../components/CustomIcons.jsx';
-import { useContext } from 'react';
-import { Context } from '../main.jsx';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { CAR_LIST_ROUTE } from '../infrastructure/routes/index.js';
+import { useDispatch, useSelector } from "react-redux";
+import { registerRequest } from "../infrastructure/redux/user/slice.js";
 
 const StyledCard = styled(Card)(({ theme }) => ({
     display: 'flex',
@@ -47,128 +47,104 @@ const SignUpContainer = styled(Stack)(({ theme }) => ({
 
 export default function SignUp() {
     const navigate = useNavigate();
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-    } = useForm();
+    const dispatch = useDispatch();
+    const { register, handleSubmit, formState: { errors } } = useForm();
+    const { token, loading, error } = useSelector(state => state.user);
+
+    useEffect(() => {
+        if (token) {
+            navigate(CAR_LIST_ROUTE);
+        }
+    }, [token, navigate]);
 
     const onSubmit = (data) => {
-        console.log(data);
-        try {
-            navigate(CAR_LIST_ROUTE);
-        } catch (e) {
-            console.error(e.response.data.message);
-        }
+        dispatch(registerRequest({ ...data, role: 'user' }));
     };
 
     return (
         <>
             <CssBaseline />
-            <SignUpContainer direction='column'>
-                <StyledCard variant='outlined'>
-                    <SitemarkIcon />
-                    <Typography
-                        component='h1'
-                        variant='h4'
-                        sx={{
-                            width: '100%',
-                            fontSize: 'clamp(2rem, 10vw, 2.15rem)',
-                        }}
-                    >
-                        Sign up
-                    </Typography>
-                    <Box
-                        component='form'
-                        onSubmit={handleSubmit(onSubmit)}
-                        sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 2,
-                        }}
-                    >
+            <SignUpContainer>
+                <StyledCard>
+                    <Typography component="h1" variant="h4">Sign up</Typography>
+                    <Box component="form" onSubmit={handleSubmit(onSubmit)}>
+                        {/* Исправлено name -> username */}
                         <FormControl>
-                            <FormLabel htmlFor='name'>Full name</FormLabel>
+                            <FormLabel htmlFor="username">Username</FormLabel>
                             <TextField
-                                autoComplete='name'
-                                name='name'
-                                required
+                                id="username"
                                 fullWidth
-                                id='name'
-                                placeholder='Jon Snow'
-                                variant='outlined'
-                                error={!!errors.name}
-                                helperText={
-                                    errors.name ? errors.name.message : ''
-                                }
-                                {...register('name', {
-                                    required: 'Name is required',
+                                error={!!errors.username}
+                                helperText={errors.username?.message}
+                                {...register('username', {
+                                    required: 'Username is required'
                                 })}
                             />
                         </FormControl>
+
                         <FormControl>
-                            <FormLabel htmlFor='email'>Email</FormLabel>
+                            <FormLabel htmlFor="email">Email</FormLabel>
                             <TextField
-                                required
+                                id="email"
                                 fullWidth
-                                id='email'
-                                placeholder='your@email.com'
-                                name='email'
-                                autoComplete='email'
-                                variant='outlined'
                                 error={!!errors.email}
-                                helperText={
-                                    errors.email ? errors.email.message : ''
-                                }
+                                helperText={errors.email?.message}
                                 {...register('email', {
                                     required: 'Email is required',
                                     pattern: {
                                         value: /\S+@\S+\.\S+/,
-                                        message:
-                                            'Please, enter the valid email address.',
-                                    },
+                                        message: 'Enter a valid email'
+                                    }
                                 })}
                             />
                         </FormControl>
+
                         <FormControl>
-                            <FormLabel htmlFor='password'>Password</FormLabel>
+                            <FormLabel htmlFor="password">Password</FormLabel>
                             <TextField
-                                required
+                                id="password"
+                                type="password"
                                 fullWidth
-                                name='password'
-                                placeholder='••••••'
-                                type='password'
-                                id='password'
-                                autoComplete='new-password'
-                                variant='outlined'
                                 error={!!errors.password}
-                                helperText={
-                                    errors.password
-                                        ? errors.password.message
-                                        : ''
-                                }
+                                helperText={errors.password?.message}
                                 {...register('password', {
                                     required: 'Password is required',
                                     minLength: {
                                         value: 6,
-                                        message:
-                                            'Password should be at least 6 characters',
-                                    },
+                                        message: 'Minimum 6 characters'
+                                    }
                                 })}
                             />
                         </FormControl>
-                        <Button type='submit' fullWidth variant='contained'>
-                            Sign up
+
+                        {/* Скрытое поле для роли (если требуется) */}
+                        <input
+                            type="hidden"
+                            {...register('role')}
+                            value="user"
+                        />
+
+                        {error && (
+                            <Typography color="error" variant="body2">
+                                {error}
+                            </Typography>
+                        )}
+
+                        <Button
+                            type="submit"
+                            fullWidth
+                            variant="contained"
+                            disabled={loading}
+                            sx={{ mt: 2 }}
+                        >
+                            {loading ? 'Signing up...' : 'Sign up'}
                         </Button>
                     </Box>
-                    <Divider>
-                        <Typography sx={{ color: 'text.secondary' }}>
-                            or
-                        </Typography>
-                    </Divider>
-                    <Typography sx={{ textAlign: 'center' }}>
+
+                    <Divider sx={{ my: 2 }}>or</Divider>
+                    <Typography>
                         Already have an account?{' '}
-                        <Link href='/login' variant='body2'>
+                        <Link href="/login" variant="body2">
                             Sign in
                         </Link>
                     </Typography>

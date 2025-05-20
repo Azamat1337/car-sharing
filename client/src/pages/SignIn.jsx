@@ -13,8 +13,12 @@ import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import Card from '@mui/material/Card';
 import { styled } from '@mui/material/styles';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router';
+import { CAR_LIST_ROUTE } from '../infrastructure/routes/index.js';
+import { useDispatch, useSelector } from "react-redux";
+import { loginRequest } from "../infrastructure/redux/user/slice.js";
 import ForgotPassword from '../components/ForgotPassword.jsx';
-import { SitemarkIcon } from '../components/CustomIcons.jsx';
 
 const StyledCard = styled(Card)(({ theme }) => ({
     display: 'flex',
@@ -44,30 +48,36 @@ const SignInContainer = styled(Stack)(({ theme }) => ({
 }));
 
 export default function SignIn() {
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const { token, loading, error } = useSelector(state => state.user);
+
     const {
         register,
         handleSubmit,
-        formState: { errors },
+        formState: { errors }
     } = useForm();
 
+    const [open, setOpen] = React.useState(false);
+
+    useEffect(() => {
+        if (token) {
+            navigate(CAR_LIST_ROUTE);
+        }
+    }, [token, navigate]);
+
     const onSubmit = (data) => {
-        console.log(data);
+        dispatch(loginRequest(data));
     };
 
-    const [open, setOpen] = React.useState(false);
-    const handleClickOpen = () => {
-        setOpen(true);
-    };
-    const handleClose = () => {
-        setOpen(false);
-    };
+    const handleClickOpen = () => setOpen(true);
+    const handleClose = () => setOpen(false);
 
     return (
         <>
             <CssBaseline />
             <SignInContainer direction='column'>
                 <StyledCard variant='outlined'>
-                    <SitemarkIcon />
                     <Typography
                         component='h1'
                         variant='h4'
@@ -94,7 +104,6 @@ export default function SignIn() {
                             <TextField
                                 id='email'
                                 type='email'
-                                name='email'
                                 placeholder='your@email.com'
                                 autoComplete='email'
                                 autoFocus
@@ -102,23 +111,20 @@ export default function SignIn() {
                                 fullWidth
                                 variant='outlined'
                                 error={!!errors.email}
-                                helperText={
-                                    errors.email ? errors.email.message : ''
-                                }
+                                helperText={errors.email?.message}
                                 {...register('email', {
                                     required: 'Email is required',
                                     pattern: {
                                         value: /\S+@\S+\.\S+/,
-                                        message:
-                                            'Please enter the valid email address.',
+                                        message: 'Please enter a valid email address',
                                     },
                                 })}
                             />
                         </FormControl>
+
                         <FormControl>
                             <FormLabel htmlFor='password'>Password</FormLabel>
                             <TextField
-                                name='password'
                                 placeholder='••••••'
                                 type='password'
                                 id='password'
@@ -127,31 +133,38 @@ export default function SignIn() {
                                 fullWidth
                                 variant='outlined'
                                 error={!!errors.password}
-                                helperText={
-                                    errors.password
-                                        ? errors.password.message
-                                        : ''
-                                }
+                                helperText={errors.password?.message}
                                 {...register('password', {
                                     required: 'Password is required',
                                     minLength: {
                                         value: 6,
-                                        message:
-                                            'Password must be at least 6 lengths',
+                                        message: 'Password must be at least 6 characters',
                                     },
                                 })}
                             />
                         </FormControl>
+
                         <FormControlLabel
-                            control={
-                                <Checkbox value='remember' color='primary' />
-                            }
+                            control={<Checkbox value='remember' color='primary' />}
                             label='Remember me'
                         />
-                        <ForgotPassword open={open} handleClose={handleClose} />
-                        <Button type='submit' fullWidth variant='contained'>
-                            Sign in
+
+                        {error && (
+                            <Typography color="error" variant="body2">
+                                {error}
+                            </Typography>
+                        )}
+
+                        <Button
+                            type='submit'
+                            fullWidth
+                            variant='contained'
+                            disabled={loading}
+                        >
+                            {loading ? 'Signing in...' : 'Sign in'}
                         </Button>
+
+                        <ForgotPassword open={open} handleClose={handleClose} />
                         <Link
                             component='button'
                             type='button'
@@ -162,6 +175,7 @@ export default function SignIn() {
                             Forgot your password?
                         </Link>
                     </Box>
+
                     <Typography sx={{ textAlign: 'center' }}>
                         Don&apos;t have an account?{' '}
                         <Link href='/registration' variant='body2'>

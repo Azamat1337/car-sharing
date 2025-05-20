@@ -1,8 +1,10 @@
 import React from 'react';
-import { AppBar, Toolbar, IconButton, Menu, MenuItem, Typography, Box } from '@mui/material';
+import { AppBar, Toolbar, IconButton, Menu, MenuItem, Typography, Box, Avatar, Button, Divider } from '@mui/material';
 import { AccountCircle } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { logout } from '../infrastructure/redux/user/slice.js';
 
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
     backgroundColor: theme.palette.background.paper,
@@ -12,52 +14,103 @@ const StyledAppBar = styled(AppBar)(({ theme }) => ({
 
 export default function Header() {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const [anchorEl, setAnchorEl] = React.useState(null);
+    const avatar = false;
+    const user = useSelector(state => state.user.profile);
 
-    const handleOpenMenu = (e) => {
-        setAnchorEl(e.currentTarget);
-    };
-    const handleCloseMenu = () => {
-        setAnchorEl(null);
-    };
+    const { username, email, role } = user || {};
 
-    const handleMenuClick = (route) => {
-        handleCloseMenu();
-        navigate(route);
+    const handleLogout = () => {
+        dispatch(logout());
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        navigate('/login');
     };
 
     return (
         <StyledAppBar position="sticky">
-            <Toolbar>
-                <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            <Toolbar sx={{ justifyContent: 'space-between' }}>
+                <Typography
+                    variant="h6"
+                    sx={{
+                        cursor: 'pointer',
+                        fontWeight: 700,
+                        letterSpacing: '0.05rem'
+                    }}
+                    onClick={() => navigate('/')}
+                >
                     CarShare+
                 </Typography>
-                <Box>
-                    <IconButton
-                        size="large"
-                        edge="end"
-                        color="inherit"
-                        onClick={handleOpenMenu}
-                        aria-controls="user-menu"
-                        aria-haspopup="true"
+
+                {user ? (
+                    <Box display="flex" alignItems="center">
+                        <IconButton
+                            size="large"
+                            edge="end"
+                            color="inherit"
+                            onClick={(e) => setAnchorEl(e.currentTarget)}
+                            sx={{ gap: 1 }}
+                        >
+                            {avatar ? (
+                                <Avatar
+                                    src={avatar}
+                                    alt={username}
+                                    sx={{ width: 40, height: 40 }}
+                                />
+                            ) : (
+                                <AccountCircle fontSize="large" />
+                            )}
+                            <Box textAlign="right">
+                                <Typography variant="subtitle1">{username}</Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                    {email}
+                                </Typography>
+                            </Box>
+                        </IconButton>
+
+                        <Menu
+                            anchorEl={anchorEl}
+                            open={Boolean(anchorEl)}
+                            onClose={() => setAnchorEl(null)}
+                            PaperProps={{
+                                sx: {
+                                    minWidth: '200px',
+                                    mt: 1.5,
+                                    '& .MuiMenuItem-root': {
+                                        py: 1.5,
+                                        px: 2.5,
+                                    }
+                                }
+                            }}
+                        >
+                            <MenuItem onClick={() => navigate('/profile')}>
+                                🚗 My Profile
+                            </MenuItem>
+                            <MenuItem onClick={() => navigate('/my-cars')}>
+                                🔑 My Bookings
+                            </MenuItem>
+                            <MenuItem onClick={() => navigate('/settings')}>
+                                ⚙️ Settings
+                            </MenuItem>
+                            <Divider sx={{ my: 0.5 }} />
+                            <MenuItem
+                                onClick={handleLogout}
+                                sx={{ color: 'error.main' }}
+                            >
+                                🚪 Logout
+                            </MenuItem>
+                        </Menu>
+                    </Box>
+                ) : (
+                    <Button
+                        variant="outlined"
+                        startIcon={<AccountCircle />}
+                        onClick={() => navigate('/login')}
                     >
-                        <AccountCircle fontSize="large" />
-                        <Typography>User Name</Typography>
-                    </IconButton>
-                    <Menu
-                        id="user-menu"
-                        anchorEl={anchorEl}
-                        open={Boolean(anchorEl)}
-                        onClose={handleCloseMenu}
-                        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-                    >
-                        <MenuItem onClick={() => handleMenuClick('/profile')}>My Profile</MenuItem>
-                        <MenuItem onClick={() => handleMenuClick('/my-cars')}>My Cars</MenuItem>
-                        <MenuItem onClick={() => handleMenuClick('/settings')}>Settings</MenuItem>
-                        <MenuItem onClick={() => handleMenuClick('/logout')}>Logout</MenuItem>
-                    </Menu>
-                </Box>
+                        Sign In
+                    </Button>
+                )}
             </Toolbar>
         </StyledAppBar>
     );

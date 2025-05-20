@@ -1,119 +1,146 @@
-const {Car, CarInfo, Brand} = require('../models/models');
-const uuid = require('uuid');
 const path = require('path');
+const uuid = require('uuid');
+const { Car, CarInfo, Brand } = require('../models/models');
+const ApiError = require('../error/ApiError');
 
 class CarController {
-    async createCar(req, res, next) {
+    // POST /api/cars
+    async create(req, res, next) {
         try {
-            const {model, year, available, brandId, attributes} = req.body;
-            const {img} = req.files;
-            let fileName = uuid.v4() + '.jpg';
-            img.mv(path.resolve(__dirname, '..', `static`, fileName));
+            const { model, year, brandId, available, info } = req.body;
+            const { img } = req.files || {};
 
-            if (!model || !year || !available) {
-                return res.status(400).json({message: 'All fields are not filled in!'});
+            // Проверяем обязательные поля
+            if (!model || !year || !brandId || !img) {
+                throw ApiError.badRequest('Model, year, brandId and image are required');
             }
 
-            const car = await Car.create({model, year, available, brandId, adminId: req.user.id});
+            // Проверяем бренд
+            const brand = await Brand.findByPk(brandId);
+            if (!brand) {
+                throw ApiError.notFound(`Brand with id=${brandId} not found`);
+            }
 
-            if (attributes && Array.isArray(attributes)) {
-                for (let attr of attributes) {
+            // Сохраняем файл изображения
+            const fileName = uuid.v4() + path.extname(img.name);
+            await img.mv(path.resolve(__dirname, '..', 'static', fileName));
+
+            // Создаём автомобиль
+            const car = await Car.create({
+                model,
+                year,
+                available: available !== undefined ? available : true,
+                img: fileName,
+                brandId
+            });
+
+            // Дополнительные характеристики (опционально)
+            if (info) {
+                const parsed = JSON.parse(info);
+                for (const item of parsed) {
                     await CarInfo.create({
                         carId: car.id,
-                        attributeName: attr.attributeName,
-                        attributeValue: attr.attributeValue,
+                        attributeName: item.attributeName,
+                        attributeValue: item.attributeValue
                     });
                 }
             }
 
             return res.status(201).json(car);
-        } catch (e) {
-            next(e);
+        } catch (err) {
+            next(err);
         }
     }
 
-    async deleteCar(req, res, next) {
+    // GET /api/cars
+    async getAll(req, res, next) {
+        try {
+            const { brandId, year, model, available, page = 1, limit = 10 } = req.query;
+            const filter = {};
+            if (brandId) filter.brandId = brandId;
+            if (year)    filter.year    = year;
+            if (model)   filter.model   = model;
+            if (available !== undefined) filter.available = available === 'true';
+
+            const offset = (page - 1) * limit;
+
+            const { count, rows } = await Car.findAndCountAll({
+                where: filter,
+                include: [
+                    { model: Brand,  as: 'brand',  attributes: ['id', 'name'] },
+                    { model: CarInfo, as: 'info',  attributes: ['attributeName','attributeValue'] }
+                ],
+                order: [['id','ASC']],
+                limit: parseInt(limit),
+                offset: parseInt(offset)
+            });
+
+            return res.json({
+                totalItems:  count,
+                totalPages: Math.ceil(count / limit),
+                currentPage: parseInt(page),
+                cars:       rows
+            });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    // GET /api/cars/:id
+    async getOne(req, res, next) {
+        try {
+            const { id } = req.params;
+            const car = await Car.findByPk(id, {
+                include: [
+                    { model: Brand,  as: 'brand',  attributes: ['id','name'] },
+                    { model: CarInfo, as: 'info',  attributes: ['attributeName','attributeValue'] }
+                ]
+            });
+            if (!car) {
+                throw ApiError.notFound(`Car with id=${id} not found`);
+            }
+            return res.json(car);
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    // PUT /api/cars/:id
+    async update(req, res, next) {
+        try {
+            const { id } = req.params;
+            const { model, year, brandId, available } = req.body;
+            const car = await Car.findByPk(id);
+            if (!car) {
+                throw ApiError.notFound(`Car with id=${id} not found`);
+            }
+
+            if (brandId) {
+                const brand = await Brand.findByPk(brandId);
+                if (!brand) throw ApiError.notFound(`Brand with id=${brandId} not found`);
+                car.brandId = brandId;
+            }
+            if (model !== undefined)   car.model   = model;
+            if (year !== undefined)    car.year    = year;
+            if (available !== undefined) car.available = available;
+
+            await car.save();
+            return res.json(car);
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    // DELETE /api/cars/:id
+    async delete(req, res, next) {
         try {
             const { id } = req.params;
             const car = await Car.findByPk(id);
-
             if (!car) {
-                return res.status(404).json({message: 'Car not found!'});
+                throw ApiError.notFound(`Car with id=${id} not found`);
             }
-
             await car.destroy();
-            return res.json({message: 'The car was deleted'});
-        } catch (e) {
-            next(e);
-        }
-    }
-
-    async updateCar(req, res, next) {
-        try {
-            const {id} = req.params;
-            const {brandId, model, year, available, attributes} = req.body;
-            const car = await Car.findByPk(id);
-
-            if (!car) {
-                return res.status(404).json({message: 'Car not found!'});
-            }
-
-            await car.update({brandId, model, year, available});
-            if (attributes && Array.isArray(attributes)) {
-                await CarInfo.destroy({where: {carId: car.id}});
-                for (const attr of attributes) {
-                    await CarInfo.create({
-                        carId: car.id,
-                        attributeName: attr.attributeName,
-                        attributeValue: attr.attributeValue,
-                    });
-                }
-            }
-
-            return res.json(car);
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    async getAllCars(req, res, next) {
-        try {
-            const {brandId, model, year, available} = req.params;
-            let filter = {};
-
-            if (brandId) filter.brandId = brandId;
-            if (model) filter.model = model;
-            if (year) filter.year = year;
-            if (available !== undefined) filter.available = available;
-
-            const cars = await Car.findAll({
-                where: filter,
-                include: [
-                    {model: Brand, as: 'Brand'},
-                    {model: CarInfo, as: 'CarInfo'},
-                ]
-            });
-
-            return res.json(cars);
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    async getCarById(req, res, next) {
-        try {
-            const {id} = req.params;
-            const car = await Car.findByPk(id, {
-                include: [
-                    {model: Brand, as: 'Brand'},
-                    {model: CarInfo, as: 'CarInfo'},
-                ]
-            });
-
-            if (!car) {
-                return res.status(404).json({message: 'Car not found!'});
-            }
-            return res.json(car);
+            return res.json({ message: 'Car deleted successfully' });
         } catch (err) {
             next(err);
         }

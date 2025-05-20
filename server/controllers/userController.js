@@ -1,51 +1,146 @@
-const {User} = require('../models/models');
+const {User, RefreshToken} = require('../models/models');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const {user} = require("pg/lib/native");
+const ApiError = require('../error/ApiError');
 
-const generateJWT = (id, email, role) => {
-    return jwt.sign({id, email, role}, process.env.SECRET_KEY, {expiresIn: '12h'});
+const ACCESS_TOKEN_EXPIRES_IN = '15m';
+const REFRESH_TOKEN_EXPIRES_IN = '7d';
+
+function generateTokens(user) {
+    const payload = { id: user.id, email: user.email, role: user.role };
+
+    const accessToken  = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: ACCESS_TOKEN_EXPIRES_IN });
+    const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET, { expiresIn: REFRESH_TOKEN_EXPIRES_IN });
+
+    return { accessToken, refreshToken };
 }
 
 class UserController {
-    async registration(req, res, next) {
-        const { email, password, role } = req.body;
-        if (!email || !password) {
-            return res.status(400).json({message: 'You should have email or password!'})
+    // POST /api/auth/register
+    async register(req, res, next) {
+        try {
+            const { username, email, password, role } = req.body;
+            if (!username || !email || !password) {
+                throw ApiError.badRequest('Username, email and password are required');
+            }
+
+            const existing = await User.findOne({ where: { email } });
+            if (existing) {
+                throw ApiError.badRequest('Email already in use');
+            }
+
+            const hashed = await bcrypt.hash(password, 10);
+            const user = await User.create({ username, email, password: hashed, role });
+
+            const { accessToken, refreshToken } = generateTokens(user);
+
+            
+            await RefreshToken.create({
+                token:     refreshToken,
+                userId:    user.id,
+                expiresAt: new Date(Date.now() + 7 * 24 * 3600 * 1000)
+            });
+
+            res.status(201).json({ accessToken, refreshToken });
+        } catch (err) {
+            next(err);
         }
-
-        const findEmail = await User.findOne({where: {email}});
-        if (findEmail) {
-            return res.status(400).json({message: 'Email already exists!'});
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 5);
-        const user = await User.create({email, password: hashedPassword, role});
-        const token = generateJWT(user.id, user.email, user.role);
-
-        return res.json({token});
     }
 
+    // POST /api/auth/login
     async login(req, res, next) {
-        const { email, password } = req.body;
+        try {
+            const { email, password } = req.body;
+            if (!email || !password) {
+                throw ApiError.badRequest('Email and password are required');
+            }
 
-        const user = await User.findOne({where: {email}});
-        if (!user) {
-            return res.status(400).json({message: 'User not found!'})
+            const user = await User.findOne({ where: { email } });
+            if (!user) {
+                throw ApiError.unauthorized('Invalid credentials');
+            }
+
+            const match = await bcrypt.compare(password, user.password);
+            if (!match) {
+                throw ApiError.unauthorized('Invalid credentials');
+            }
+
+            const { accessToken, refreshToken } = generateTokens(user);
+            await RefreshToken.create({
+                token:     refreshToken,
+                userId:    user.id,
+                expiresAt: new Date(Date.now() + 7 * 24 * 3600 * 1000)
+            });
+
+            res.json({ accessToken, refreshToken });
+        } catch (err) {
+            next(err);
         }
-
-        let comparePassword = bcrypt.compareSync(password, user.password);
-        if (!comparePassword) {
-            return res.status(401).json({message: 'Invalid password!'})
-        }
-
-        const token = generateJWT(user.id, user.email, user.role);
-        return res.json({token});
     }
 
-    async check(req, res) {
-        const token = generateJWT(user.id, user.email, user.role);
-        return res.json({token});
+    // POST /api/auth/refresh
+    async refreshToken(req, res, next) {
+        try {
+            const { refreshToken } = req.body;
+            if (!refreshToken) {
+                throw ApiError.badRequest('Refresh token is required');
+            }
+
+            const stored = await RefreshToken.findOne({ where: { token: refreshToken } });
+            if (!stored) {
+                throw ApiError.unauthorized('Invalid refresh token');
+            }
+
+            if (new Date() > stored.expiresAt) {
+                await stored.destroy();
+                throw ApiError.unauthorized('Refresh token expired');
+            }
+
+            let payload;
+            try {
+                payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+            } catch {
+                await stored.destroy();
+                throw ApiError.unauthorized('Invalid refresh token');
+            }
+
+            const user = await User.findByPk(payload.id);
+            const { accessToken: newAccess, refreshToken: newRefresh } = generateTokens(user);
+
+            await stored.destroy();
+            await RefreshToken.create({
+                token:     newRefresh,
+                userId:    user.id,
+                expiresAt: new Date(Date.now() + 7 * 24 * 3600 * 1000)
+            });
+
+            res.json({ accessToken: newAccess, refreshToken: newRefresh });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    // POST /api/auth/logout
+    async logout(req, res, next) {
+        try {
+            const { refreshToken } = req.body;
+            if (refreshToken) {
+                await RefreshToken.destroy({ where: { token: refreshToken } });
+            }
+            res.json({ message: 'Logged out successfully' });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    // GET /api/auth/profile
+    async profile(req, res, next) {
+        try {
+            const { id, email, role } = req.user;
+            res.json({ id, email, role });
+        } catch (err) {
+            next(err);
+        }
     }
 }
 

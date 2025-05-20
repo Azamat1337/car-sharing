@@ -3,10 +3,10 @@ const carController = require('../controllers/carController');
 const checkRoleMiddleware = require('../middlewares/checkRoleMiddleware');
 const router = new Router();
 
-router.post('/', checkRoleMiddleware("ADMIN"), carController.createCar);
-router.delete('/:id', checkRoleMiddleware("ADMIN"), carController.deleteCar);
-router.put('/:id', checkRoleMiddleware("ADMIN"), carController.updateCar);
-router.get('/', carController.getAllCars);
-router.get('/:id', carController.getCarById);
+router.post('/', checkRoleMiddleware("ADMIN"), carController.create);
+router.delete('/:id', checkRoleMiddleware("ADMIN"), carController.delete);
+router.put('/:id', checkRoleMiddleware("ADMIN"), carController.update);
+router.get('/', carController.getAll);
+router.get('/:id', carController.getOne);
 
 module.exports = router;
