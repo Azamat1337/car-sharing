@@ -8,10 +8,20 @@ import {
     ListItemText,
     TextField,
     Button,
-    Paper
+    Paper,
+    Alert
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useParams } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { getChatMessagesRequest, chatMessagesDataSelector, chatMessagesLoadingSelector, chatMessagesErrorSelector } from '../infrastructure/redux/chat/getChatMessages/slice';
+import { chatService } from '../infrastructure/services/chat/chatService';
+import {
+    closeConversationRequest,
+    closeConversationLoadingSelector,
+    closeConversationSuccessSelector,
+    closeConversationErrorSelector
+} from '../infrastructure/redux/chat/close/slice';
 
 const ChatContainer = styled(Container)(({ theme }) => ({
     padding: theme.spacing(4),
@@ -33,30 +43,54 @@ const InputBox = styled(Box)(({ theme }) => ({
     gap: theme.spacing(1),
 }));
 
-export default function AdminChatPage() {
+export default function ChatPage() {
+    const dispatch = useDispatch();
+    const messages = useSelector(chatMessagesDataSelector);
+    const loading = useSelector(chatMessagesLoadingSelector);
+    const error = useSelector(chatMessagesErrorSelector);
+    const profile = useSelector(state => state.user.profile);
+
+    const closeLoading = useSelector(closeConversationLoadingSelector);
+    const closeSuccess = useSelector(closeConversationSuccessSelector);
+    const closeError = useSelector(closeConversationErrorSelector);
+
     const { chatId } = useParams();
-    const [messages, setMessages] = useState([
-        { id: 1, sender: 'admin', content: 'Здравствуйте! Чем могу помочь?', ts: '10:00 AM' },
-        { id: 2, sender: 'user', content: 'Привет. Хочу узнать о статусе моей брони.', ts: '10:01 AM' },
-    ]);
     const [text, setText] = useState('');
     const messagesEndRef = useRef(null);
+
+    // Для статуса чата (можно получать из messages[0]?.conversation?.status или отдельным запросом)
+    const [chatStatus, setChatStatus] = useState('ACTIVE');
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
-    const handleSend = () => {
-        if (!text.trim()) return;
-        const newMsg = {
-            id: messages.length + 1,
-            sender: 'user',
-            content: text.trim(),
-            ts: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        };
-        setMessages(prev => [...prev, newMsg]);
+    useEffect(() => {
+        if (chatId) {
+            dispatch(getChatMessagesRequest(chatId));
+            // Получить статус чата (если приходит с сообщениями)
+            // Можно заменить на отдельный селектор, если есть
+        }
+    }, [dispatch, chatId]);
+
+    useEffect(() => {
+        // Если сообщения содержат статус чата
+        if (messages.length > 0 && messages[0].conversation?.status) {
+            setChatStatus(messages[0].conversation.status);
+        }
+    }, [messages]);
+
+    const handleSend = async () => {
+        if (!text.trim() || chatStatus !== 'ACTIVE') return;
+        await chatService.sendMessage(chatId, text.trim());
         setText('');
-        // здесь можно отправить через WebSocket / API
+        dispatch(getChatMessagesRequest(chatId));
+    };
+
+    const isAdmin = profile?.role === 'ADMIN';
+
+    const handleCloseChat = () => {
+        dispatch(closeConversationRequest(chatId));
     };
 
     return (
@@ -64,19 +98,40 @@ export default function AdminChatPage() {
             <Typography variant="h5" gutterBottom>
                 Chat with Admin
             </Typography>
+            {closeError && (
+                <Alert severity="error" sx={{ mb: 2 }}>
+                    {closeError}
+                </Alert>
+            )}
+            {isAdmin && chatStatus === 'ACTIVE' && (
+                <Button
+                    variant="contained"
+                    color="error"
+                    onClick={handleCloseChat}
+                    disabled={closeLoading}
+                    sx={{ mb: 2 }}
+                >
+                    {closeLoading ? 'Завершение...' : 'Завершить чат'}
+                </Button>
+            )}
+            {chatStatus === 'CLOSED' && (
+                <Alert severity="info" sx={{ mb: 2 }}>
+                    Чат завершён
+                </Alert>
+            )}
             <MessagesBox elevation={1}>
                 <List>
                     {messages.map(msg => (
                         <ListItem
                             key={msg.id}
                             sx={{
-                                justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
+                                justifyContent: msg.senderId === profile.id ? 'flex-end' : 'flex-start',
                             }}
                         >
                             <Box
                                 sx={{
-                                    bgcolor: msg.sender === 'user' ? 'primary.main' : 'grey.300',
-                                    color: msg.sender === 'user' ? '#fff' : '#000',
+                                    bgcolor: msg.senderId === profile.id ? 'primary.main' : 'grey.300',
+                                    color: msg.senderId === profile.id ? '#fff' : '#000',
                                     borderRadius: 1,
                                     p: 1.5,
                                     maxWidth: '70%',
@@ -84,7 +139,7 @@ export default function AdminChatPage() {
                             >
                                 <ListItemText
                                     primary={msg.content}
-                                    secondary={msg.ts}
+                                    secondary={msg.sender?.username || ''}
                                     primaryTypographyProps={{ component: 'span' }}
                                     secondaryTypographyProps={{ component: 'span', sx: { fontSize: '0.75rem' } }}
                                 />
@@ -97,14 +152,19 @@ export default function AdminChatPage() {
             <InputBox>
                 <TextField
                     fullWidth
-                    placeholder="Type your message…"
+                    placeholder={chatStatus === 'CLOSED' ? 'Чат завершён' : 'Type your message…'}
                     variant="outlined"
                     size="small"
                     value={text}
                     onChange={e => setText(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter') handleSend(); }}
+                    disabled={chatStatus === 'CLOSED'}
                 />
-                <Button variant="contained" onClick={handleSend}>
+                <Button
+                    variant="contained"
+                    onClick={handleSend}
+                    disabled={chatStatus === 'CLOSED'}
+                >
                     Send
                 </Button>
             </InputBox>

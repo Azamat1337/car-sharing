@@ -22,6 +22,7 @@ import {
     CAR_LIST_ROUTE,
     LOGIN_ROUTE,
     REGISTRATION_ROUTE,
+    TAXI_ROUTE,
 } from '../infrastructure/routes/index.js';
 
 const StyledToolbar = styled(Toolbar)(({ theme }) => ({
@@ -93,6 +94,15 @@ export default function Navbar() {
                                 onClick={() => navigate(BLOG_ROUTE)}
                             >
                                 Blog
+                            </Button>
+                            <Button
+                                variant='text'
+                                color='info'
+                                size='small'
+                                sx={{ minWidth: 0 }}
+                                onClick={() => navigate(TAXI_ROUTE)}
+                            >
+                                Taxi
                             </Button>
                         </Box>
                     </Box>

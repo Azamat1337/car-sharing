@@ -1,6 +1,6 @@
 const Router = require('express');
 const chatController = require('../controllers/chatController');
-const authMiddleware      = require('../middlewares/authMiddleware');
+const authMiddleware = require('../middlewares/authMiddleware');
 const checkRoleMiddleware = require('../middlewares/checkRoleMiddleware');
 
 const router = new Router();
@@ -10,5 +10,6 @@ router.get('/all', authMiddleware, checkRoleMiddleware("ADMIN"), chatController.
 router.get('/:convId', authMiddleware, chatController.getMessages);
 router.post('/:convId', authMiddleware, chatController.sendMessage);
 router.post('/', authMiddleware, chatController.startConversation);
+router.post('/:convId/close', authMiddleware, chatController.closeConversation);
 
 module.exports = router;

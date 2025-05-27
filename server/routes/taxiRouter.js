@@ -12,5 +12,6 @@ router.put('/:rideId/status', authMiddleware, checkRoleMiddleware("ADMIN"), taxi
 router.get('/available', authMiddleware, taxiController.getAvailableRides);
 router.post('/:rideId/join', authMiddleware, taxiController.joinRide);
 router.delete('/:rideId/join', authMiddleware, taxiController.leaveRide);
+router.post('/:rideId/complete', authMiddleware, taxiController.completeRide);
 
 module.exports = router;

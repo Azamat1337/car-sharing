@@ -16,14 +16,14 @@ app.use(fileUpload());
 app.use(express.json());
 app.use(cors());
 app.use('/api', router);
-app.use(express.static(path.resolve(__dirname, 'static')));
+app.use('/static', express.static(path.resolve(__dirname, 'static')));
 app.use(errorHandler);
 
 async function start() {
     try {
         await sequelize.authenticate();
-        await sequelize.sync();
-        app.listen(PORT, () => {console.log(`SERVER STARTED ON PORT ${PORT}`)})
+        await sequelize.sync({ alter: true });
+        app.listen(PORT, () => { console.log(`SERVER STARTED ON PORT ${PORT}`) })
     } catch (error) {
         console.error(error);
     }

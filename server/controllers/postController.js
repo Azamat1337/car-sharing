@@ -61,14 +61,23 @@ class PostController {
             if (!title || !content) {
                 throw ApiError.badRequest('Title and content are required');
             }
-            // req.user из authMiddleware, содержит id
             const authorId = req.user.id;
+            let imagePath = null;
+            if (req.files && req.files.image) {
+                const image = req.files.image;
+                const fileName = Date.now() + '_' + image.name;
+                const path = require('path');
+                const uploadPath = path.resolve(__dirname, '..', 'static', fileName);
+                await image.mv(uploadPath);
+                imagePath = '/static/' + fileName;
+            }
             const post = await Post.create({
                 title,
                 excerpt: excerpt || null,
                 content,
                 authorId,
-                publishedAt: new Date()
+                publishedAt: new Date(),
+                image: imagePath
             });
             return res.status(201).json(post);
         } catch (err) {

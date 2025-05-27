@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Container,
     Box,
@@ -12,9 +12,26 @@ import {
     TableRow,
     TableCell,
     TextField,
-    Button
+    Button,
+    Alert
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import { useParams } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { carService } from '../infrastructure/services/cars/carService';
+import {
+    getCarInfoRequest,
+    carInfoLoadingSelector,
+    carInfoErrorSelector,
+    carInfoDataSelector
+} from '../infrastructure/redux/carInfo/get/slice';
+import {
+    createBookingRequest,
+    createBookingLoadingSelector,
+    createBookingErrorSelector,
+    createBookingSuccessSelector,
+    createBookingReset
+} from '../infrastructure/redux/booking/create/slice';
 
 const CarPageContainer = styled(Container)(({ theme }) => ({
     backgroundColor: '#fff',
@@ -38,27 +55,63 @@ const InfoCard = styled(Card)(({ theme }) => ({
 }));
 
 export default function CarPage() {
-    const car = {
-        brand: 'Toyota',
-        model: 'Camry',
-        year: 2020,
-        image: 'https://via.placeholder.com/800x500?text=Toyota+Camry',
-        description:
-            'The Toyota Camry is a comfortable and reliable mid-size sedan with excellent fuel economy, smooth ride, and a spacious interior.',
-        features: {
-            'Engine': '2.5L 4-Cylinder',
-            'Power': '203 hp',
-            'Transmission': '8-speed automatic',
-            'Seats': '5',
-            'Fuel Type': 'Gasoline',
-            'Mileage': '≤ 15,000 miles',
-            'Color': 'White'
+    const { id } = useParams();
+    const dispatch = useDispatch();
+
+    const [car, setCar] = useState(null);
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
+
+    const loadingInfo = useSelector(carInfoLoadingSelector);
+    const errorInfo = useSelector(carInfoErrorSelector);
+    const carInfo = useSelector(carInfoDataSelector);
+
+    const bookingLoading = useSelector(createBookingLoadingSelector);
+    const bookingError = useSelector(createBookingErrorSelector);
+    const bookingSuccess = useSelector(createBookingSuccessSelector);
+
+    useEffect(() => {
+        async function fetchCar() {
+            try {
+                const data = await carService.fetchById(id);
+                setCar(data);
+            } catch (e) {
+                setCar(null);
+            }
         }
-    };
+        fetchCar();
+        dispatch(getCarInfoRequest(id));
+    }, [id, dispatch]);
+
+    useEffect(() => {
+        if (bookingSuccess) {
+            setStartDate('');
+            setEndDate('');
+            setTimeout(() => {
+                dispatch(createBookingReset());
+            }, 2000);
+        }
+    }, [bookingSuccess, dispatch]);
 
     const handleRent = (e) => {
         e.preventDefault();
+        if (!startDate || !endDate) return;
+        dispatch(createBookingRequest({
+            carId: car.id,
+            startTime: startDate,
+            endTime: endDate
+        }));
     };
+
+    if (!car) {
+        return (
+            <CarPageContainer maxWidth="md">
+                <Typography variant="h5" align="center" sx={{ mt: 8 }}>
+                    Машина не найдена
+                </Typography>
+            </CarPageContainer>
+        );
+    }
 
     return (
         <CarPageContainer maxWidth="md">
@@ -67,25 +120,40 @@ export default function CarPage() {
                     <CarImageCard>
                         <CardMedia
                             component="img"
-                            image={car.image}
-                            alt={`${car.brand} ${car.model}`}
-                            sx={{ height: 0, paddingTop: '56.25%' }} // 16:9
+                            image={
+                                car.img
+                                    ? (car.img.startsWith('http')
+                                        ? car.img
+                                        : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/static/${car.img}`)
+                                    : null
+                            }
+                            alt={`${car.brand?.name || ''} ${car.model}`}
                         />
                     </CarImageCard>
                 </Grid>
 
                 <Grid item xs={12} md={8}>
                     <Typography variant="h4" gutterBottom>
-                        {car.brand} {car.model} ({car.year})
+                        {car.brand?.name} {car.model} ({car.year})
                     </Typography>
                     <Typography variant="body1" paragraph>
-                        {car.description}
+                        {car.description || ''}
                     </Typography>
 
                     <InfoCard component="form" onSubmit={handleRent}>
                         <Typography variant="h6" gutterBottom>
                             Rent this car
                         </Typography>
+                        {bookingSuccess && (
+                            <Alert severity="success" sx={{ mb: 2 }}>
+                                Заявка на аренду успешно отправлена!
+                            </Alert>
+                        )}
+                        {bookingError && (
+                            <Alert severity="error" sx={{ mb: 2 }}>
+                                {bookingError}
+                            </Alert>
+                        )}
                         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
                             <TextField
                                 label="Start Date"
@@ -94,6 +162,9 @@ export default function CarPage() {
                                 InputLabelProps={{ shrink: true }}
                                 required
                                 sx={{ flex: 1, minWidth: 160 }}
+                                value={startDate}
+                                onChange={e => setStartDate(e.target.value)}
+                                disabled={bookingLoading}
                             />
                             <TextField
                                 label="End Date"
@@ -102,10 +173,18 @@ export default function CarPage() {
                                 InputLabelProps={{ shrink: true }}
                                 required
                                 sx={{ flex: 1, minWidth: 160 }}
+                                value={endDate}
+                                onChange={e => setEndDate(e.target.value)}
+                                disabled={bookingLoading}
                             />
                         </Box>
-                        <Button type="submit" variant="contained" sx={{ backgroundColor: '#000', color: '#fff' }}>
-                            Rent Now
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            sx={{ backgroundColor: '#000', color: '#fff' }}
+                            disabled={bookingLoading}
+                        >
+                            {bookingLoading ? 'Отправка...' : 'Rent Now'}
                         </Button>
                     </InfoCard>
                 </Grid>
@@ -113,20 +192,29 @@ export default function CarPage() {
                 <Grid item xs={12} md={4}>
                     <InfoCard>
                         <Typography variant="h6" gutterBottom>
-                            Specifications
+                            Характеристики
                         </Typography>
-                        <Table size="small">
-                            <TableBody>
-                                {Object.entries(car.features).map(([key, value]) => (
-                                    <TableRow key={key}>
-                                        <TableCell component="th" sx={{ borderBottom: 'none', fontWeight: 'bold' }}>
-                                            {key}
-                                        </TableCell>
-                                        <TableCell sx={{ borderBottom: 'none' }}>{value}</TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                        {loadingInfo && <Typography>Загрузка характеристик...</Typography>}
+                        {errorInfo && <Typography color="error">{errorInfo}</Typography>}
+                        {!loadingInfo && !errorInfo && (
+                            <Table size="small">
+                                <TableBody>
+                                    {carInfo.length === 0 && (
+                                        <TableRow>
+                                            <TableCell colSpan={2}>Нет характеристик</TableCell>
+                                        </TableRow>
+                                    )}
+                                    {carInfo.map(info => (
+                                        <TableRow key={info.id}>
+                                            <TableCell component="th" sx={{ borderBottom: 'none', fontWeight: 'bold' }}>
+                                                {info.attributeName}
+                                            </TableCell>
+                                            <TableCell sx={{ borderBottom: 'none' }}>{info.attributeValue}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        )}
                     </InfoCard>
                 </Grid>
             </Grid>

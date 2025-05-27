@@ -34,7 +34,7 @@ class UserController {
 
             const { accessToken, refreshToken } = generateTokens(user);
 
-            
+
             await RefreshToken.create({
                 token:     refreshToken,
                 userId:    user.id,

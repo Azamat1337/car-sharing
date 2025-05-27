@@ -1,4 +1,4 @@
-import {createSlice} from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
     loading: false,
@@ -17,7 +17,7 @@ const getBrandsSlice = createSlice({
             state.error = null;
         },
         getBrandsSuccess: (state, action) => {
-            state.data = action.payload;
+            state.items = action.payload;
             state.loading = false;
         },
         getBrandsFailure: (state, action) => {
@@ -32,6 +32,6 @@ const getBrandsSlice = createSlice({
     }
 })
 
-export const {getBrandsDataSelector, getBrandsErrorSelector, getBrandsLoadingSelector } = getBrandsSlice.selectors;
-export const {getBrandsFailure, getBrandsRequest, getBrandsSuccess} = getBrandsSlice.actions;
+export const { getBrandsDataSelector, getBrandsErrorSelector, getBrandsLoadingSelector } = getBrandsSlice.selectors;
+export const { getBrandsFailure, getBrandsRequest, getBrandsSuccess } = getBrandsSlice.actions;
 export default getBrandsSlice.reducer;

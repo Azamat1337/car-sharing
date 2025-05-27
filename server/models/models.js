@@ -1,7 +1,6 @@
 const sequelize = require("../db");
 const { DataTypes } = require("sequelize");
 
-// Пользователь с ролями (USER, ADMIN)
 const User = sequelize.define("User", {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
     username: { type: DataTypes.STRING, allowNull: false },
@@ -10,20 +9,17 @@ const User = sequelize.define("User", {
     role: { type: DataTypes.ENUM('USER', 'ADMIN'), allowNull: false, defaultValue: 'USER' },
 });
 
-// Таблица для хранения refresh-токенов
 const RefreshToken = sequelize.define("RefreshToken", {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     token: { type: DataTypes.STRING, allowNull: false },
     expiresAt: { type: DataTypes.DATE, allowNull: false },
 });
 
-// Бренд автомобиля
 const Brand = sequelize.define("Brand", {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     name: { type: DataTypes.STRING, allowNull: false, unique: true },
 });
 
-// Автомобиль
 const Car = sequelize.define("Car", {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     model: { type: DataTypes.STRING, allowNull: false },
@@ -32,14 +28,12 @@ const Car = sequelize.define("Car", {
     img: { type: DataTypes.STRING, allowNull: false },
 });
 
-// Дополнительные характеристики автомобиля
 const CarInfo = sequelize.define("CarInfo", {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     attributeName: { type: DataTypes.STRING, allowNull: false },
     attributeValue: { type: DataTypes.STRING, allowNull: false },
 });
 
-// Бронирование автомобиля
 const Booking = sequelize.define("Booking", {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     startTime: { type: DataTypes.DATE, allowNull: false },
@@ -47,19 +41,20 @@ const Booking = sequelize.define("Booking", {
     status: { type: DataTypes.ENUM('PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED'), allowNull: false, defaultValue: 'PENDING' },
 });
 
-// Блог-посты
 const Post = sequelize.define("Post", {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     title: { type: DataTypes.STRING, allowNull: false },
     excerpt: { type: DataTypes.STRING },
     content: { type: DataTypes.TEXT, allowNull: false },
+    image: { type: DataTypes.STRING, allowNull: true },
     publishedAt: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
 });
 
 const Conversation = sequelize.define('Conversation', {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-    userId: {type: DataTypes.INTEGER, allowNull: false },
-    subject: {type: DataTypes.STRING, allowNull: true },
+    userId: { type: DataTypes.INTEGER, allowNull: false },
+    subject: { type: DataTypes.STRING, allowNull: true },
+    status: { type: DataTypes.ENUM('ACTIVE', 'CLOSED'), allowNull: false, defaultValue: 'ACTIVE' },
 })
 
 const Message = sequelize.define("Message", {
@@ -70,20 +65,21 @@ const Message = sequelize.define("Message", {
 })
 
 const Ride = sequelize.define('Ride', {
-    id:           { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-    userId:       { type: DataTypes.INTEGER, allowNull: false },   // кто создал заявку
-    fromLocation: { type: DataTypes.STRING,  allowNull: false },   // точка А
-    toLocation:   { type: DataTypes.STRING,  allowNull: false },   // точка Б
-    startTime:    { type: DataTypes.DATE,    allowNull: false },   // время начала
-    price:        { type: DataTypes.DECIMAL(10,2), allowNull: false }, // предложенная цена
-    status:       { type: DataTypes.ENUM('PENDING','APPROVED','CANCELLED'), allowNull: false, defaultValue: 'PENDING' }
+    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    userId: { type: DataTypes.INTEGER, allowNull: false },
+    fromLocation: { type: DataTypes.STRING, allowNull: false },
+    toLocation: { type: DataTypes.STRING, allowNull: false },
+    startTime: { type: DataTypes.DATE, allowNull: false },
+    price: { type: DataTypes.DECIMAL(10, 2), allowNull: false },
+    status: { type: DataTypes.ENUM('PENDING', 'APPROVED', 'CANCELLED', 'COMPLETED'), allowNull: false, defaultValue: 'PENDING' },
+    seatsAvailable: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 4 },
 });
 
 const RideParticipant = sequelize.define('RideParticipant', {
-    id:        { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-    rideId:    { type: DataTypes.INTEGER, allowNull: false },
-    userId:    { type: DataTypes.INTEGER, allowNull: false },
-    joinedAt:  { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW }
+    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    rideId: { type: DataTypes.INTEGER, allowNull: false },
+    userId: { type: DataTypes.INTEGER, allowNull: false },
+    joinedAt: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW }
 });
 
 // Ассоциации
@@ -111,23 +107,23 @@ Booking.belongsTo(Car, { foreignKey: 'carId', as: 'car' });
 User.hasMany(Post, { foreignKey: 'authorId', as: 'posts' });
 Post.belongsTo(User, { foreignKey: 'authorId', as: 'author' });
 
-Conversation.belongsTo(User,{ foreignKey: 'userId', as: 'user' });
-User.hasMany(Conversation,{ foreignKey: 'userId', as: 'conversations' });
+Conversation.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+User.hasMany(Conversation, { foreignKey: 'userId', as: 'conversations' });
 
-Message.belongsTo(Conversation,{ foreignKey: 'conversationId', as: 'conversation' });
-Conversation.hasMany(Message,{ foreignKey: 'conversationId', as: 'messages' });
+Message.belongsTo(Conversation, { foreignKey: 'conversationId', as: 'conversation' });
+Conversation.hasMany(Message, { foreignKey: 'conversationId', as: 'messages' });
 
-Message.belongsTo(User,{ foreignKey: 'senderId', as: 'sender' });
-User.hasMany(Message,{ foreignKey: 'senderId', as: 'sentMessages' });
+Message.belongsTo(User, { foreignKey: 'senderId', as: 'sender' });
+User.hasMany(Message, { foreignKey: 'senderId', as: 'sentMessages' });
 
-User.hasMany(Ride,            { foreignKey: 'userId', as: 'rides' });
-Ride.belongsTo(User,          { foreignKey: 'userId', as: 'creator' });
+User.hasMany(Ride, { foreignKey: 'userId', as: 'rides' });
+Ride.belongsTo(User, { foreignKey: 'userId', as: 'creator' });
 
 Ride.hasMany(RideParticipant, { foreignKey: 'rideId', as: 'participants' });
-RideParticipant.belongsTo(Ride,{ foreignKey: 'rideId', as: 'ride' });
+RideParticipant.belongsTo(Ride, { foreignKey: 'rideId', as: 'ride' });
 
 User.hasMany(RideParticipant, { foreignKey: 'userId', as: 'rideBookings' });
-RideParticipant.belongsTo(User,{ foreignKey: 'userId', as: 'user' });
+RideParticipant.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
 module.exports = {
     User,
@@ -139,4 +135,6 @@ module.exports = {
     Post,
     Ride,
     RideParticipant,
+    Conversation,
+    Message,
 };

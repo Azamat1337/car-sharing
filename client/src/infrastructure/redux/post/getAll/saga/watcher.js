@@ -1,15 +1,7 @@
-import {postService} from "../../../../services/post/postService.js";
-import {getAllPostsSuccess, getAllPostsFailure} from "../slice.js";
-import {call, put} from 'redux-saga/effects'
+import { getAllPostsRequest } from "../slice.js";
+import { takeLatest } from 'redux-saga/effects'
+import { getAllPostsWorker } from "./worker.js";
 
-export function* getAllPostsWorker(action) {
-    try {
-        const paginationParams = action.payload || {};
-        const responseData = yield call(postService.fetchAll, paginationParams);
-
-        yield put(getAllPostsSuccess(responseData));
-    } catch (error) {
-        const errorMessage = error.response?.data?.message || error.message || 'Не удалось загрузить посты';
-        yield put(getAllPostsFailure(errorMessage));
-    }
+export function* getAllPostsWatcher() {
+    yield takeLatest(getAllPostsRequest.type, getAllPostsWorker)
 }

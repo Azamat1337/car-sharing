@@ -1,5 +1,6 @@
-import React from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import {
     Container,
     Box,
@@ -9,19 +10,43 @@ import {
     Tabs,
     Tab,
     Card,
-    CardMedia,
-    CardContent,
     List,
     ListItem,
     ListItemText,
-    Button
+    Button,
+    CircularProgress,
+    Alert,
+    Chip,
+    FormControlLabel,
+    Switch,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import {CHAT_ROUTE} from "../infrastructure/routes/index.js";
+import {
+    getMyBookingsRequest,
+    getMyBookingsDataSelector,
+    getMyBookingsLoadingSelector, getMyBookingsErrorSelector
+} from '../infrastructure/redux/booking/getMy/slice.js';
+import {
+    getMyRidesRequest,
+    getMyRidesDataSelector,
+    getMyRidesLoadingSelector,
+    getMyRidesErrorSelector
+} from '../infrastructure/redux/taxi/getMy/slice.js';
+import {
+    completeRideRequest,
+    completeRideLoadingSelector
+} from '../infrastructure/redux/taxi/complete/slice.js';
+import {
+    getOrCreateChatRequest,
+    chatDataSelector,
+    chatLoadingSelector,
+    chatErrorSelector
+} from '../infrastructure/redux/chat/getOrCreateChat/slice.js';
+import { format } from 'date-fns';
 
 const ProfileContainer = styled(Container)(({ theme }) => ({
     padding: theme.spacing(4),
-    backgroundColor: '#fafafa',
+    backgroundColor: theme.palette.background.default,
     minHeight: '100vh',
 }));
 
@@ -34,99 +59,217 @@ function TabPanel({ children, value, index }) {
     return value === index ? <Box sx={{ mt: 2 }}>{children}</Box> : null;
 }
 
-export default function UserProfile() {
+export default function UserProfile({ setDarkMode, darkMode }) {
     const navigate = useNavigate();
-    const [tab, setTab] = React.useState(0);
+    const dispatch = useDispatch();
+    const [tab, setTab] = useState(0);
 
-    const user = {
-        id: '123123123',
-        name: 'Jon Snow',
-        email: 'jon@winterfell.com',
-        avatar: '',
+    const { profile, loading: userLoading } = useSelector(state => state.user);
+    const bookings = useSelector(getMyBookingsDataSelector);
+    const bookingsLoading = useSelector(getMyBookingsLoadingSelector);
+    const bookingsError = useSelector(getMyBookingsErrorSelector);
+    const chat = useSelector(chatDataSelector);
+    const chatLoading = useSelector(chatLoadingSelector);
+    const chatError = useSelector(chatErrorSelector);
+
+    // Для вкладки Taxi
+    const myRides = useSelector(getMyRidesDataSelector);
+    const myRidesLoading = useSelector(getMyRidesLoadingSelector);
+    const myRidesError = useSelector(getMyRidesErrorSelector);
+    const completeLoading = useSelector(completeRideLoadingSelector);
+
+    const handleContactAdmin = () => {
+        dispatch(getOrCreateChatRequest({ subject: 'Support' }));
     };
-    const userCars = [
-        { id:1, brand:'Toyota', model:'Camry', year:2020, image:'https://via.placeholder.com/150?text=Camry' },
-        { id:2, brand:'BMW', model:'X5', year:2022, image:'https://via.placeholder.com/150?text=X5' },
-    ];
-    const userBookings = [
-        { id:101, car:'Civic', date:'2025-05-10', status:'Completed' },
-        { id:102, car:'Focus', date:'2025-05-15', status:'Upcoming' },
-    ];
 
-    const goToChatPage = (id) => {
-        const path = CHAT_ROUTE.replace(':id', id)
-        navigate(path)
-    }
+    useEffect(() => {
+        if (tab === 1 && !bookings.length) {
+            dispatch(getMyBookingsRequest());
+        } else if (tab === 2 && !myRides.length) {
+            dispatch(getMyRidesRequest());
+        }
+    }, [tab, dispatch]);
+
+    useEffect(() => {
+        if (chat && chat.id) {
+            navigate(`/chat/${chat.id}`);
+        }
+    }, [chat, navigate]);
 
     const handleChange = (_, newVal) => setTab(newVal);
+
+    const formatDate = (dateString) => {
+        return format(new Date(dateString), 'dd MMM yyyy HH:mm');
+    };
+
+    const handleCompleteRide = (rideId) => {
+        dispatch(completeRideRequest(rideId));
+    };
 
     return (
         <ProfileContainer maxWidth="md">
             <Grid container spacing={4}>
                 <Grid item xs={12}>
-                    <Box sx={{ display:'flex', alignItems:'center', gap:2 }}>
-                        <Avatar sx={{ width:80, height:80 }}>{user.name.charAt(0)}</Avatar>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Avatar sx={{ width: 80, height: 80 }}>
+                            {profile?.username?.charAt(0) || 'U'}
+                        </Avatar>
                         <Box>
-                            <Typography variant="h5">{user.name}</Typography>
-                            <Typography color="text.secondary">{user.email}</Typography>
+                            <Typography variant="h5">{profile?.username}</Typography>
+                            <Typography color="text.secondary">{profile?.email}</Typography>
                         </Box>
-                        <Box sx={{ flexGrow:1 }} />
-                        <Button variant="outlined" onClick={() => goToChatPage(user.id)}>
-                            Contact Admin
+                        <Box sx={{ flexGrow: 1 }} />
+                        <Button
+                            variant="outlined"
+                            onClick={handleContactAdmin}
+                            disabled={chatLoading}
+                        >
+                            {chatLoading ? 'Loading...' : 'Contact Admin'}
                         </Button>
+                        {chatError && (
+                            <Typography color="error" variant="body2">{chatError}</Typography>
+                        )}
                     </Box>
                 </Grid>
 
                 <Grid item xs={12}>
                     <Tabs value={tab} onChange={handleChange}>
-                        <Tab label="My Cars" />
                         <Tab label="Bookings" />
+                        <Tab label="History" />
+                        <Tab label="Taxi" />
                         <Tab label="Settings" />
                     </Tabs>
 
+                    {/* Вкладка с автомобилями */}
                     <TabPanel value={tab} index={0}>
                         <Grid container spacing={2}>
-                            {userCars.map(car => (
-                                <Grid item xs={12} sm={6} key={car.id}>
-                                    <SectionCard>
-                                        <CardMedia
-                                            component="img"
-                                            height="140"
-                                            image={car.image}
-                                            alt={`${car.brand} ${car.model}`}
-                                        />
-                                        <CardContent>
-                                            <Typography variant="h6">{car.brand} {car.model}</Typography>
-                                            <Typography variant="body2" color="text.secondary">{car.year}</Typography>
-                                        </CardContent>
-                                    </SectionCard>
-                                </Grid>
-                            ))}
-                            {userCars.length === 0 && (
-                                <Typography color="text.secondary">You have no cars listed.</Typography>
-                            )}
+                            {/* ... существующая логика для автомобилей ... */}
                         </Grid>
                     </TabPanel>
 
-                    {/* Bookings */}
+                    {/* Вкладка с бронированиями */}
                     <TabPanel value={tab} index={1}>
-                        <List>
-                            {userBookings.map(bk => (
-                                <ListItem key={bk.id} divider>
-                                    <ListItemText
-                                        primary={`${bk.car} on ${bk.date}`}
-                                        secondary={`Status: ${bk.status}`}
-                                    />
-                                </ListItem>
-                            ))}
-                            {userBookings.length === 0 && (
-                                <Typography color="text.secondary">No bookings yet.</Typography>
-                            )}
-                        </List>
+                        {bookingsLoading ? (
+                            <Box display="flex" justifyContent="center" py={4}>
+                                <CircularProgress />
+                            </Box>
+                        ) : bookingsError ? (
+                            <Alert severity="error" sx={{ my: 2 }}>
+                                {bookingsError}
+                            </Alert>
+                        ) : (
+                            <List>
+                                {bookings.map(booking => (
+                                    <ListItem key={booking.id} divider>
+                                        <ListItemText
+                                            primary={
+                                                <>
+                                                    <Typography variant="subtitle1">
+                                                        {booking.car.model}
+                                                    </Typography>
+                                                    <Typography variant="body2" color="text.secondary">
+                                                        {formatDate(booking.startTime)} - {formatDate(booking.endTime)}
+                                                    </Typography>
+                                                </>
+                                            }
+                                            secondary={
+                                                <Chip
+                                                    label={booking.status}
+                                                    size="small"
+                                                    color={
+                                                        booking.status === 'CONFIRMED' ? 'success' :
+                                                            booking.status === 'CANCELLED' ? 'error' : 'default'
+                                                    }
+                                                />
+                                            }
+                                        />
+                                    </ListItem>
+                                ))}
+                                {bookings.length === 0 && !bookingsLoading && (
+                                    <Typography color="text.secondary" sx={{ p: 2 }}>
+                                        No bookings found
+                                    </Typography>
+                                )}
+                            </List>
+                        )}
                     </TabPanel>
 
+                    {/* Вкладка с заявками на поездки (Taxi) */}
                     <TabPanel value={tab} index={2}>
-                        <Typography variant="body1">Account settings coming soon.</Typography>
+                        {myRidesLoading ? (
+                            <Box display="flex" justifyContent="center" py={4}>
+                                <CircularProgress />
+                            </Box>
+                        ) : myRidesError ? (
+                            <Alert severity="error" sx={{ my: 2 }}>
+                                {myRidesError}
+                            </Alert>
+                        ) : (
+                            <List>
+                                {myRides.map(ride => (
+                                    <ListItem key={ride.id} divider>
+                                        <ListItemText
+                                            primary={
+                                                <>
+                                                    <Typography variant="subtitle1">
+                                                        {ride.fromLocation} → {ride.toLocation}
+                                                    </Typography>
+                                                    <Typography variant="body2" color="text.secondary">
+                                                        {formatDate(ride.startTime)}
+                                                    </Typography>
+                                                </>
+                                            }
+                                            secondary={
+                                                <>
+                                                    <Chip
+                                                        label={ride.status}
+                                                        size="small"
+                                                        color={
+                                                            ride.status === 'APPROVED' ? 'success' :
+                                                                ride.status === 'REJECTED' ? 'error' : 'warning'
+                                                        }
+                                                        sx={{ mr: 1 }}
+                                                    />
+                                                    <span>Цена: {Number(ride.price).toFixed(2)}₸</span>
+                                                    <span style={{ marginLeft: 8 }}>Мест: {ride.seatsAvailable}</span>
+                                                </>
+                                            }
+                                        />
+                                        {/* Кнопка завершить поездку только для создателя и только если статус APPROVED */}
+                                        {profile?.id === ride.userId && ride.status === 'APPROVED' && (
+                                            <Button
+                                                variant="contained"
+                                                color="success"
+                                                size="small"
+                                                onClick={() => handleCompleteRide(ride.id)}
+                                                disabled={completeLoading}
+                                                sx={{ ml: 2 }}
+                                            >
+                                                {completeLoading ? 'Завершение...' : 'Завершить'}
+                                            </Button>
+                                        )}
+                                    </ListItem>
+                                ))}
+                                {myRides.length === 0 && !myRidesLoading && (
+                                    <Typography color="text.secondary" sx={{ p: 2 }}>
+                                        Нет ваших заявок на поездки
+                                    </Typography>
+                                )}
+                            </List>
+                        )}
+                    </TabPanel>
+
+                    {/* Вкладка с настройками */}
+                    <TabPanel value={tab} index={3}>
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={darkMode}
+                                    onChange={e => setDarkMode(e.target.checked)}
+                                />
+                            }
+                            label="Тёмная тема"
+                        />
                     </TabPanel>
                 </Grid>
             </Grid>

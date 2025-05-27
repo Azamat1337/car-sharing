@@ -1,6 +1,6 @@
 const { Ride, RideParticipant, User } = require('../models/models');
 const ApiError = require('../error/ApiError');
-const { Op }   = require('sequelize');
+const { Op } = require('sequelize');
 
 class TaxiController {
     // POST /api/taxi/
@@ -10,6 +10,7 @@ class TaxiController {
             if (!fromLocation || !toLocation || !startTime || !price) {
                 throw ApiError.badRequest('Все поля обязательны');
             }
+
             const ride = await Ride.create({
                 userId: req.user.id,
                 fromLocation, toLocation,
@@ -25,8 +26,8 @@ class TaxiController {
     async getAllRides(req, res, next) {
         try {
             const rides = await Ride.findAll({
-                include: [{ model: User, as: 'creator', attributes: ['id','username'] }],
-                order: [['startTime','DESC']]
+                include: [{ model: User, as: 'creator', attributes: ['id', 'username'] }],
+                order: [['startTime', 'DESC']]
             });
             return res.json(rides);
         } catch (err) { next(err); }
@@ -37,7 +38,7 @@ class TaxiController {
         try {
             const rides = await Ride.findAll({
                 where: { userId: req.user.id },
-                order: [['startTime','DESC']]
+                order: [['startTime', 'DESC']]
             });
             return res.json(rides);
         } catch (err) { next(err); }
@@ -61,8 +62,8 @@ class TaxiController {
         try {
             const rides = await Ride.findAll({
                 where: { status: 'APPROVED' },
-                include: [{ model: User, as: 'creator', attributes: ['id','username'] }],
-                order: [['startTime','ASC']]
+                include: [{ model: User, as: 'creator', attributes: ['id', 'username'] }],
+                order: [['startTime', 'ASC']]
             });
             return res.json(rides);
         } catch (err) { next(err); }
@@ -85,6 +86,27 @@ class TaxiController {
                 rideId, userId: req.user.id
             });
             return res.status(201).json(part);
+        } catch (err) { next(err); }
+    }
+
+    async completeRide(req, res, next) {
+        try {
+            const { rideId } = req.params;
+            const ride = await Ride.findByPk(rideId);
+            if (!ride) {
+                throw ApiError.notFound('Поездка не найдена');
+            }
+            if (ride.userId !== req.user.id) {
+                throw ApiError.forbidden('Вы не можете завершить эту поездку');
+            }
+            if (ride.status !== 'APPROVED') {
+                throw ApiError.badRequest('Нельзя завершить поездку в этом статусе');
+            }
+
+            ride.status = 'COMPLETED';
+            await ride.save();
+            return res.json(ride);
+
         } catch (err) { next(err); }
     }
 

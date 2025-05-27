@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, { useEffect } from 'react';
 import {
     Container,
     Box,
@@ -8,9 +8,12 @@ import {
     Button,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import {fetchNewsDataSelector, fetchNewsRequest} from "../infrastructure/redux/news/get/slice.js";
-import {useParams} from "react-router-dom";
-import {useDispatch, useSelector} from "react-redux";
+import { useParams } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+    getAllPostsDataSelector,
+    getAllPostsRequest
+} from '../infrastructure/redux/post/getAll/slice.js';
 
 const PostContainer = styled(Container)(({ theme }) => ({
     padding: theme.spacing(4),
@@ -28,18 +31,33 @@ const Section = styled(Box)(({ theme }) => ({
     marginBottom: theme.spacing(4),
 }));
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 export default function BlogPostPage() {
-    const {id} = useParams();
-    const data = useSelector(fetchNewsDataSelector) ?? []
-
-    const post = data?.[Number(id)] ?? {}
-    console.log('DATA, POST', data, post)
-    console.log('ID', id)
+    const { id } = useParams();
     const dispatch = useDispatch();
-
+    const postsData = useSelector(getAllPostsDataSelector);
+    const posts = postsData?.posts || [];
+    const post = posts.find((p) => String(p.id) === String(id));
+    console.log('post', post);
     useEffect(() => {
-        // dispatch(fetchNewsRequest())
-    }, [])
+        if (!postsData) {
+            dispatch(getAllPostsRequest());
+        }
+    }, [dispatch, postsData]);
+
+    if (!post) {
+        return (
+            <PostContainer maxWidth="md">
+                <Typography variant="h5" align="center">Пост не найден</Typography>
+                <Box sx={{ textAlign: 'center', mt: 4 }}>
+                    <Button variant="outlined" onClick={() => window.history.back()}>
+                        ← Назад к блогу
+                    </Button>
+                </Box>
+            </PostContainer>
+        );
+    }
 
     return (
         <PostContainer maxWidth="md">
@@ -47,14 +65,21 @@ export default function BlogPostPage() {
                 {post.title}
             </Typography>
             <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                By {post.author} • {post.publishedAt.split('T').join(' ')}
+                {post.author?.username ? `By ${post.author.username}` : ''}
+                {post.publishedAt ? ` • ${new Date(post.publishedAt).toLocaleString()}` : ''}
             </Typography>
 
-            <HeroImage
-                component="img"
-                image={post.urlToImage}
-                alt={post.title}
-            />
+            {post.image && (
+                <HeroImage
+                    component="img"
+                    image={
+                        post.image.startsWith('http')
+                            ? post.image
+                            : `${API_URL}${post.image}`
+                    }
+                    alt={post.title}
+                />
+            )}
 
             <Divider sx={{ mb: 4 }} />
 
@@ -66,7 +91,7 @@ export default function BlogPostPage() {
 
             <Box sx={{ textAlign: 'center', mt: 4 }}>
                 <Button variant="outlined" onClick={() => window.history.back()}>
-                    ← Back to Blog
+                    ← Назад к блогу
                 </Button>
             </Box>
         </PostContainer>

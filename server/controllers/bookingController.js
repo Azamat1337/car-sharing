@@ -22,7 +22,6 @@ class BookingController {
     }
 
     // GET /api/bookings/my
-    // Для авторизованного пользователя: его бронирования
     async getMy(req, res, next) {
         try {
             const userId = req.user.id;
@@ -52,7 +51,7 @@ class BookingController {
             if (!booking) {
                 throw ApiError.notFound(`Booking with id=${id} not found`);
             }
-            // Only owner or admin can view
+
             if (req.user.role !== 'ADMIN' && booking.userId !== req.user.id) {
                 throw ApiError.forbidden('Access denied');
             }
@@ -75,7 +74,7 @@ class BookingController {
             if (start >= end) {
                 throw ApiError.badRequest('startTime must be before endTime');
             }
-            // Проверка, доступен ли автомобиль за период
+
             const overlap = await Booking.findOne({
                 where: {
                     carId,
@@ -105,7 +104,7 @@ class BookingController {
             if (!booking) {
                 throw ApiError.notFound(`Booking with id=${id} not found`);
             }
-            // Only owner or admin can update
+
             if (req.user.role !== 'ADMIN' && booking.userId !== req.user.id) {
                 throw ApiError.forbidden('Access denied');
             }
@@ -114,7 +113,7 @@ class BookingController {
             if (start >= end) {
                 throw ApiError.badRequest('startTime must be before endTime');
             }
-            // Проверка на пересечения, исключая текущую бронь
+
             const overlap = await Booking.findOne({
                 where: {
                     carId: booking.carId,
@@ -147,7 +146,7 @@ class BookingController {
             if (!booking) {
                 throw ApiError.notFound(`Booking with id=${id} not found`);
             }
-            // Only owner or admin can delete
+
             if (req.user.role !== 'ADMIN' && booking.userId !== req.user.id) {
                 throw ApiError.forbidden('Access denied');
             }
