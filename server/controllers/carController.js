@@ -7,7 +7,7 @@ class CarController {
     // POST /api/cars
     async create(req, res, next) {
         try {
-            const { model, year, brandId, available, info } = req.body;
+            const { model, year, brandId, available, info, rentalType } = req.body;
             const { img } = req.files || {};
 
             // Проверяем обязательные поля
@@ -31,7 +31,8 @@ class CarController {
                 year,
                 available: available !== undefined ? available : true,
                 img: fileName,
-                brandId
+                brandId,
+                rentalType: rentalType || 'DAILY'
             });
 
             // Дополнительные характеристики (опционально)
@@ -55,11 +56,13 @@ class CarController {
     // GET /api/cars
     async getAll(req, res, next) {
         try {
-            const { brandId, year, model, available, page = 1, limit = 10 } = req.query;
+            const { brandId, year, model, available, page = 1, limit = 10, rentalType } = req.query;
             const filter = {};
+
+            if (rentalType) filter.rentalType = rentalType;
             if (brandId) filter.brandId = brandId;
-            if (year)    filter.year    = year;
-            if (model)   filter.model   = model;
+            if (year) filter.year = year;
+            if (model) filter.model = model;
             if (available !== undefined) filter.available = available === 'true';
 
             const offset = (page - 1) * limit;
@@ -67,19 +70,19 @@ class CarController {
             const { count, rows } = await Car.findAndCountAll({
                 where: filter,
                 include: [
-                    { model: Brand,  as: 'brand',  attributes: ['id', 'name'] },
-                    { model: CarInfo, as: 'info',  attributes: ['attributeName','attributeValue'] }
+                    { model: Brand, as: 'brand', attributes: ['id', 'name'] },
+                    { model: CarInfo, as: 'info', attributes: ['attributeName', 'attributeValue'] }
                 ],
-                order: [['id','ASC']],
+                order: [['id', 'ASC']],
                 limit: parseInt(limit),
                 offset: parseInt(offset)
             });
 
             return res.json({
-                totalItems:  count,
+                totalItems: count,
                 totalPages: Math.ceil(count / limit),
                 currentPage: parseInt(page),
-                cars:       rows
+                cars: rows
             });
         } catch (err) {
             next(err);
@@ -92,8 +95,8 @@ class CarController {
             const { id } = req.params;
             const car = await Car.findByPk(id, {
                 include: [
-                    { model: Brand,  as: 'brand',  attributes: ['id','name'] },
-                    { model: CarInfo, as: 'info',  attributes: ['attributeName','attributeValue'] }
+                    { model: Brand, as: 'brand', attributes: ['id', 'name'] },
+                    { model: CarInfo, as: 'info', attributes: ['attributeName', 'attributeValue'] }
                 ]
             });
             if (!car) {
@@ -109,7 +112,7 @@ class CarController {
     async update(req, res, next) {
         try {
             const { id } = req.params;
-            const { model, year, brandId, available } = req.body;
+            const { model, year, brandId, available, rentalType } = req.body;
             const car = await Car.findByPk(id);
             if (!car) {
                 throw ApiError.notFound(`Car with id=${id} not found`);
@@ -120,9 +123,12 @@ class CarController {
                 if (!brand) throw ApiError.notFound(`Brand with id=${brandId} not found`);
                 car.brandId = brandId;
             }
-            if (model !== undefined)   car.model   = model;
-            if (year !== undefined)    car.year    = year;
+            if (model !== undefined) car.model = model;
+            if (year !== undefined) car.year = year;
             if (available !== undefined) car.available = available;
+            if (rentalType !== undefined) {
+                car.rentalType = rentalType;
+            }
 
             await car.save();
             return res.json(car);

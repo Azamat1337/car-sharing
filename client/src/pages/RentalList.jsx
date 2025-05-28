@@ -14,7 +14,7 @@ import Card from '@mui/material/Card';
 import CardMedia from '@mui/material/CardMedia';
 import CardContent from '@mui/material/CardContent';
 import { useNavigate } from "react-router";
-import { CAR_PAGE_ROUTE } from "../infrastructure/routes/index.js";
+import { RENTAL_CAR_ROUTE } from "../infrastructure/routes/index.js";
 import { useDispatch, useSelector } from 'react-redux';
 import {
     getAllCarsRequest,
@@ -41,8 +41,7 @@ const CarCard = styled(Card)(({ theme }) => ({
     },
 }));
 
-
-export default function CarList() {
+export default function RentalList() {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const [selectedBrand, setSelectedBrand] = useState('');
@@ -58,29 +57,34 @@ export default function CarList() {
 
     useEffect(() => {
         dispatch(getBrandsRequest());
-        dispatch(getAllCarsRequest());
-    }, []);
+        dispatch(getAllCarsRequest({ rentalType: ['DAILY', 'BOTH'] }));
+    }, [dispatch]);
 
     const goToCar = (id) => {
-        const path = CAR_PAGE_ROUTE.replace(':id', id);
+        const path = RENTAL_CAR_ROUTE.replace(':id', id);
         navigate(path);
     }
 
     const handleSearchKeyDown = (e) => {
         if (e.key === 'Enter') {
-            dispatch(getAllCarsRequest({ model: search }));
+            dispatch(getAllCarsRequest({ model: search, rentalType: ['DAILY', 'BOTH'] }));
         }
     }
 
     const handleBrandClick = (brand) => {
         setSelectedBrand(brand.id);
-        dispatch(getAllCarsRequest({ brandId: brand.id }));
+        dispatch(getAllCarsRequest({ brandId: brand.id, rentalType: ['DAILY', 'BOTH'] }));
     }
+
+    const filteredCars = cars.filter(car =>
+        (!yearFrom || car.year >= Number(yearFrom)) &&
+        (!yearTo || car.year <= Number(yearTo))
+    );
 
     return (
         <Container maxWidth="lg" sx={{ py: 4, backgroundColor: 'white' }}>
             <Typography variant="h4" gutterBottom color="primary" sx={{ textAlign: 'center' }}>
-                Car Sharing Inventory
+                Car Rental Inventory
             </Typography>
 
             <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
@@ -98,6 +102,8 @@ export default function CarList() {
                     variant="outlined"
                     size="small"
                     type="number"
+                    value={yearFrom}
+                    onChange={e => setYearFrom(e.target.value)}
                     InputProps={{ inputProps: { min: 2000, max: new Date().getFullYear() } }}
                     sx={{ width: 120 }}
                 />
@@ -106,6 +112,8 @@ export default function CarList() {
                     variant="outlined"
                     size="small"
                     type="number"
+                    value={yearTo}
+                    onChange={e => setYearTo(e.target.value)}
                     InputProps={{ inputProps: { min: 2000, max: new Date().getFullYear() } }}
                     sx={{ width: 120 }}
                 />
@@ -139,18 +147,18 @@ export default function CarList() {
                     )}
                     {!loading && !error && (
                         <Grid container spacing={3}>
-                            {cars.length === 0 && (
+                            {filteredCars.length === 0 && (
                                 <Grid item xs={12}>
                                     <Typography align="center">Нет машин для отображения</Typography>
                                 </Grid>
                             )}
-                            {cars.map((car) => (
+                            {filteredCars.map((car) => (
                                 <Grid item xs={12} sm={6} md={4} key={car.id}>
                                     <CarCard sx={{ cursor: 'pointer' }} onClick={() => goToCar(car.id)}>
                                         <CardMedia
                                             component="img"
                                             height="160"
-                                            image={car.image?.startsWith('http') ? car.img : (car.img ? `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/static/${car.img}` : null)}
+                                            image={car.img?.startsWith('http') ? car.img : (car.img ? `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/static/${car.img}` : null)}
                                             alt={`${car.brand?.name} ${car.model}`}
                                         />
                                         <CardContent>

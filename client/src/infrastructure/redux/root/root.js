@@ -24,6 +24,9 @@ import closeConversationReducer from '../chat/close/slice.js';
 import getAllBookingsReducer from '../booking/getAll/slice.js';
 import getBookingByIdReducer from '../booking/getById/slice.js';
 import createBookingReducer from '../booking/create/slice.js';
+import createCarInfoReducer from '../carInfo/create/slice.js';
+import updateCarInfoReducer from '../carInfo/update/slice.js';
+import deleteCarInfoReducer from '../carInfo/delete/slice.js';
 
 import { GET_BRANDS } from "../brand/get/slice.js";
 import { ADD_BRAND } from "../brand/add/slice.js";
@@ -50,6 +53,9 @@ import { CLOSE_CONVERSATION } from "../chat/close/slice.js";
 import { GET_ALL_BOOKINGS } from "../booking/getAll/slice.js";
 import { GET_BOOKING_BY_ID } from "../booking/getById/slice.js";
 import { CREATE_BOOKING } from "../booking/create/slice.js";
+import { CREATE_CAR_INFO } from "../carInfo/create/slice.js";
+import { UPDATE_CAR_INFO } from "../carInfo/update/slice.js";
+import { DELETE_CAR_INFO } from "../carInfo/delete/slice.js";
 
 const rootReducer = combineReducers({
     [FETCH_NEWS]: newsReducer,
@@ -77,6 +83,9 @@ const rootReducer = combineReducers({
     [GET_ALL_BOOKINGS]: getAllBookingsReducer,
     [GET_BOOKING_BY_ID]: getBookingByIdReducer,
     [CREATE_BOOKING]: createBookingReducer,
+    [CREATE_CAR_INFO]: createCarInfoReducer,
+    [UPDATE_CAR_INFO]: updateCarInfoReducer,
+    [DELETE_CAR_INFO]: deleteCarInfoReducer,
 })
 
 export default rootReducer;

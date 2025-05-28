@@ -1,29 +1,32 @@
 import {
     ADMIN_ROUTE,
     LOGIN_ROUTE,
-    CAR_LIST_ROUTE,
     HOME_ROUTE,
     REGISTRATION_ROUTE,
-    RENTAL_ROUTE,
-    USER_ROUTE, CAR_PAGE_ROUTE, CHAT_ROUTE, BLOG_ROUTE, POST_ROUTE,
+    USER_ROUTE, CHAT_ROUTE, BLOG_ROUTE, POST_ROUTE,
     ADMIN_CHAT_ROUTE, TAXI_ROUTE,
-    ADMIN_TAXI_ROUTE
+    ADMIN_TAXI_ROUTE,
+    RENTAL_CAR_ROUTE,
+    RENTAL_LIST_ROUTE,
+    CAR_SHARING_LIST_ROUTE,
+    CARSHARING_CAR_ROUTE
 } from './infrastructure/routes/index.js';
-import Admin from './pages/Admin.jsx';
 import SignIn from './pages/SignIn.jsx';
 import SignUp from './pages/SignUp.jsx';
-import Rental from './pages/Rental.jsx';
 import Home from './pages/Home.jsx';
 import UserProfile from './pages/UserProfile.jsx';
-import CarList from './pages/CarList.jsx';
-import CarPage from "./pages/CarPage.jsx";
+import RentalList from './pages/RentalList.jsx';
+import RentalCar from "./pages/RentalCar.jsx";
 import ChatPage from "./pages/ChatPage.jsx";
-import AdminChatsPage from './pages/admin/ChatsAdmin.jsx';
 import BlogPage from "./pages/Blog.jsx";
 import BlogPostPage from "./pages/BlogPost.jsx";
 import TaxiListPage from './pages/TaxiList.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
+import Admin from './pages/Admin.jsx';
+import AdminChatsPage from './pages/admin/ChatsAdmin.jsx';
 import TaxiAdminPage from './pages/admin/TaxiAdmin.jsx';
+import CarSharingList from './pages/CarSharingList.jsx';
+import CarSharingCar from './pages/CarSharingCar.jsx';
 
 export const authRoutes = [
     {
@@ -74,20 +77,24 @@ export const publicRoutes = [
         element: <SignUp />,
     },
     {
-        path: CAR_LIST_ROUTE,
-        element: <CarList />,
+        path: RENTAL_LIST_ROUTE,
+        element: <RentalList />,
     },
     {
-        path: RENTAL_ROUTE,
-        element: <Rental />,
+        path: RENTAL_CAR_ROUTE,
+        element: <RentalCar />
+    },
+    {
+        path: CAR_SHARING_LIST_ROUTE,
+        element: <CarSharingList />,
+    },
+    {
+        path: CARSHARING_CAR_ROUTE,
+        element: <CarSharingCar />,
     },
     {
         path: HOME_ROUTE,
         element: <Home />,
-    },
-    {
-        path: CAR_PAGE_ROUTE,
-        element: <CarPage />
     },
     {
         path: BLOG_ROUTE,

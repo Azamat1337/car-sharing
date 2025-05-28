@@ -26,6 +26,11 @@ const Car = sequelize.define("Car", {
     year: { type: DataTypes.INTEGER, allowNull: false },
     available: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
     img: { type: DataTypes.STRING, allowNull: false },
+    rentalType: {
+        type: DataTypes.ENUM('DAILY', 'HOURLY', 'BOTH'),
+        allowNull: false,
+        defaultValue: 'DAILY',
+    },
 });
 
 const CarInfo = sequelize.define("CarInfo", {

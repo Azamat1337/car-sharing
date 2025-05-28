@@ -19,9 +19,10 @@ import {
 import { useNavigate } from 'react-router';
 import {
     BLOG_ROUTE,
-    CAR_LIST_ROUTE,
+    CAR_SHARING_LIST_ROUTE,
     LOGIN_ROUTE,
     REGISTRATION_ROUTE,
+    RENTAL_LIST_ROUTE,
     TAXI_ROUTE,
 } from '../infrastructure/routes/index.js';
 
@@ -74,17 +75,18 @@ export default function Navbar() {
                                 variant='text'
                                 color='info'
                                 size='small'
-                                onClick={() => navigate(CAR_LIST_ROUTE)}
+                                onClick={() => navigate(RENTAL_LIST_ROUTE)}
                             >
-                                Car List
+                                Rental
                             </Button>
                             <Button
                                 variant='text'
                                 color='info'
                                 size='small'
                                 sx={{ minWidth: 0 }}
+                                onClick={() => navigate(CAR_SHARING_LIST_ROUTE)}
                             >
-                                Rental
+                                Carsharing
                             </Button>
                             <Button
                                 variant='text'

@@ -14,7 +14,7 @@ import Card from '@mui/material/Card';
 import { styled } from '@mui/material/styles';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { CAR_LIST_ROUTE } from '../infrastructure/routes/index.js';
+import { RENTAL_LIST_ROUTE } from '../infrastructure/routes/index.js';
 import { useDispatch, useSelector } from "react-redux";
 import { registerRequest } from "../infrastructure/redux/user/slice.js";
 
@@ -53,7 +53,7 @@ export default function SignUp() {
 
     useEffect(() => {
         if (token) {
-            navigate(CAR_LIST_ROUTE);
+            navigate(RENTAL_LIST_ROUTE);
         }
     }, [token, navigate]);
 

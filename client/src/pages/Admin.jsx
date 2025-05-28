@@ -29,6 +29,7 @@ export default function AdminPanel() {
     const [carBrandId, setCarBrandId] = useState('');
     const [carImage, setCarImage] = useState(null);
     const [carError, setCarError] = useState('');
+    const [carRentalType, setCarRentalType] = useState('');
 
     const carLoading = useSelector(addCarLoadingSelector);
     const carAddError = useSelector(addCarErrorSelector);
@@ -97,7 +98,7 @@ export default function AdminPanel() {
     };
 
     const handleCreateCar = () => {
-        if (!carModel.trim() || !carYear || !carBrandId) {
+        if (!carModel.trim() || !carYear || !carBrandId || !carRentalType) {
             setCarError('Заполните все поля');
             return;
         }
@@ -105,7 +106,8 @@ export default function AdminPanel() {
             model: carModel,
             year: carYear,
             brandId: carBrandId,
-            img: carImage
+            img: carImage,
+            rentalType: carRentalType,
         }));
         handleCloseCar();
     };
@@ -280,6 +282,23 @@ export default function AdminPanel() {
                         {brands.map(b => (
                             <MenuItem key={b.id} value={b.id}>{b.name}</MenuItem>
                         ))}
+                    </Select>
+                    <Select
+                        margin="dense"
+                        fullWidth
+                        value={carRentalType}
+                        displayEmpty
+                        onChange={e => {
+                            setCarRentalType(e.target.value);
+                            setCarError('');
+                        }}
+                        error={!!carError}
+                        sx={{ mt: 2 }}
+                    >
+                        <MenuItem value="" disabled>Выберите тип аренды</MenuItem>
+                        <MenuItem value="DAILY">Посуточно</MenuItem>
+                        <MenuItem value="HOURLY">Почасовой (каршеринг)</MenuItem>
+                        <MenuItem value="BOTH">Оба варианта</MenuItem>
                     </Select>
                     <Button
                         variant="outlined"

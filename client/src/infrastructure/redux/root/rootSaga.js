@@ -25,6 +25,9 @@ import { closeConversationWatcher } from '../chat/close/saga/watcher.js';
 import { getAllBookingsWatcher } from '../booking/getAll/saga/watcher.js';
 import { getBookingByIdWatcher } from '../booking/getById/saga/watcher.js';
 import { createBookingWatcher } from '../booking/create/saga/watcher.js';
+import { createCarInfoWatcher } from '../carInfo/create/saga/watcher.js';
+import { updateCarInfoWatcher } from '../carInfo/update/saga/watcher.js';
+import { deleteCarInfoWatcher } from '../carInfo/delete/saga/watcher.js';
 
 export default function* rootSaga() {
     yield all([
@@ -54,5 +57,8 @@ export default function* rootSaga() {
         getAllBookingsWatcher(),
         getBookingByIdWatcher(),
         createBookingWatcher(),
+        createCarInfoWatcher(),
+        updateCarInfoWatcher(),
+        deleteCarInfoWatcher()
     ]);
 }
