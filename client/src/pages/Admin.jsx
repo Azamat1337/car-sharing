@@ -30,6 +30,8 @@ export default function AdminPanel() {
     const [carImage, setCarImage] = useState(null);
     const [carError, setCarError] = useState('');
     const [carRentalType, setCarRentalType] = useState('');
+    const [carDailyPrice, setCarDailyPrice] = useState('');
+    const [carHourlyPrice, setCarHourlyPrice] = useState('');
 
     const carLoading = useSelector(addCarLoadingSelector);
     const carAddError = useSelector(addCarErrorSelector);
@@ -95,6 +97,9 @@ export default function AdminPanel() {
         setCarBrandId('');
         setCarImage(null);
         setCarError('');
+        setCarRentalType('');
+        setCarDailyPrice('');
+        setCarHourlyPrice('');
     };
 
     const handleCreateCar = () => {
@@ -102,13 +107,25 @@ export default function AdminPanel() {
             setCarError('Заполните все поля');
             return;
         }
+        if ((carRentalType === 'DAILY' || carRentalType === 'BOTH') && (!carDailyPrice || Number(carDailyPrice) <= 0)) {
+            setCarError('Укажите корректную цену за сутки');
+            return;
+        }
+        if ((carRentalType === 'HOURLY' || carRentalType === 'BOTH') && (!carHourlyPrice || Number(carHourlyPrice) <= 0)) {
+            setCarError('Укажите корректную цену за час');
+            return;
+        }
+
         dispatch(addCarRequest({
             model: carModel,
             year: carYear,
             brandId: carBrandId,
             img: carImage,
             rentalType: carRentalType,
+            dailyPrice: carDailyPrice || 0,
+            hourlyPrice: carHourlyPrice || 0,
         }));
+
         handleCloseCar();
     };
 
@@ -300,6 +317,30 @@ export default function AdminPanel() {
                         <MenuItem value="HOURLY">Почасовой (каршеринг)</MenuItem>
                         <MenuItem value="BOTH">Оба варианта</MenuItem>
                     </Select>
+                    {(carRentalType === 'DAILY' || carRentalType === 'BOTH') && (
+                        <TextField
+                            margin="dense"
+                            label="Цена за сутки (Tг)"
+                            type="number"
+                            fullWidth
+                            value={carDailyPrice}
+                            onChange={e => setCarDailyPrice(e.target.value)}
+                            error={!!carError && (carRentalType === 'DAILY' || carRentalType === 'BOTH')}
+                            sx={{ mt: 2 }}
+                        />
+                    )}
+                    {(carRentalType === 'HOURLY' || carRentalType === 'BOTH') && (
+                        <TextField
+                            margin="dense"
+                            label="Цена за час (Tг)"
+                            type="number"
+                            fullWidth
+                            value={carHourlyPrice}
+                            onChange={e => setCarHourlyPrice(e.target.value)}
+                            error={!!carError && (carRentalType === 'HOURLY' || carRentalType === 'BOTH')}
+                            sx={{ mt: 2 }}
+                        />
+                    )}
                     <Button
                         variant="outlined"
                         component="label"

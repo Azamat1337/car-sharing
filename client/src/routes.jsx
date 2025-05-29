@@ -9,7 +9,8 @@ import {
     RENTAL_CAR_ROUTE,
     RENTAL_LIST_ROUTE,
     CAR_SHARING_LIST_ROUTE,
-    CARSHARING_CAR_ROUTE
+    CARSHARING_CAR_ROUTE,
+    ADMIN_BOOKING_ROUTE
 } from './infrastructure/routes/index.js';
 import SignIn from './pages/SignIn.jsx';
 import SignUp from './pages/SignUp.jsx';
@@ -27,6 +28,8 @@ import AdminChatsPage from './pages/admin/ChatsAdmin.jsx';
 import TaxiAdminPage from './pages/admin/TaxiAdmin.jsx';
 import CarSharingList from './pages/CarSharingList.jsx';
 import CarSharingCar from './pages/CarSharingCar.jsx';
+import { element } from 'prop-types';
+import BookingAdmin from './pages/admin/BookingAdmin.jsx';
 
 export const authRoutes = [
     {
@@ -64,7 +67,15 @@ export const authRoutes = [
                 <TaxiAdminPage />
             </ProtectedRoute>
         )
-    }
+    },
+    {
+        path: ADMIN_BOOKING_ROUTE,
+        element: (
+            <ProtectedRoute>
+                <BookingAdmin />
+            </ProtectedRoute>
+        )
+    },
 ];
 
 export const publicRoutes = [

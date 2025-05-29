@@ -28,6 +28,7 @@ import { createBookingWatcher } from '../booking/create/saga/watcher.js';
 import { createCarInfoWatcher } from '../carInfo/create/saga/watcher.js';
 import { updateCarInfoWatcher } from '../carInfo/update/saga/watcher.js';
 import { deleteCarInfoWatcher } from '../carInfo/delete/saga/watcher.js';
+import { updateBookingWatcher } from '../booking/update/saga/watcher.js';
 
 export default function* rootSaga() {
     yield all([
@@ -59,6 +60,7 @@ export default function* rootSaga() {
         createBookingWatcher(),
         createCarInfoWatcher(),
         updateCarInfoWatcher(),
-        deleteCarInfoWatcher()
+        deleteCarInfoWatcher(),
+        updateBookingWatcher(),
     ]);
 }

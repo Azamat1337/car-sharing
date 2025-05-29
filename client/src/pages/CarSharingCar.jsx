@@ -92,6 +92,9 @@ export default function CarSharingCar() {
     const [car, setCar] = useState(null);
     const [startDateTime, setStartDateTime] = useState('');
     const [endDateTime, setEndDateTime] = useState('');
+    const [showBookingModal, setShowBookingModal] = useState(false);
+    const [totalPrice, setTotalPrice] = useState(0);
+    const [duration, setDuration] = useState(0);
 
     // Для модалок характеристик
     const [openAdd, setOpenAdd] = useState(false);
@@ -167,15 +170,41 @@ export default function CarSharingCar() {
         if (bookingSuccess) {
             setStartDateTime('');
             setEndDateTime('');
+            setShowBookingModal(false);
             setTimeout(() => {
                 dispatch(createBookingReset());
             }, 2000);
         }
     }, [bookingSuccess, dispatch]);
 
-    const handleRent = (e) => {
+    // Расчет стоимости и длительности бронирования
+    useEffect(() => {
+        if (car && startDateTime && endDateTime) {
+            const start = new Date(startDateTime);
+            const end = new Date(endDateTime);
+            let hours = (end - start) / (1000 * 60 * 60);
+            if (hours > 0) {
+                hours = Math.ceil(hours);
+                setDuration(hours);
+                setTotalPrice(hours * Number(car.hourlyPrice || 0));
+            } else {
+                setDuration(0);
+                setTotalPrice(0);
+            }
+        } else {
+            setDuration(0);
+            setTotalPrice(0);
+        }
+    }, [car, startDateTime, endDateTime]);
+
+    const handleOpenBookingModal = (e) => {
         e.preventDefault();
         if (!startDateTime || !endDateTime) return;
+        setShowBookingModal(true);
+    };
+
+    const handleConfirmBooking = () => {
+        setShowBookingModal(false);
         dispatch(createBookingRequest({
             carId: car.id,
             startTime: startDateTime,
@@ -264,9 +293,12 @@ export default function CarSharingCar() {
                     <Typography variant="body1" paragraph>
                         {car.description || ''}
                     </Typography>
-                    <InfoCard component="form" onSubmit={handleRent}>
+                    <InfoCard component="form" onSubmit={handleOpenBookingModal}>
                         <Typography variant="h6" gutterBottom>
                             Почасовая аренда
+                        </Typography>
+                        <Typography sx={{ mb: 1 }}>
+                            Цена за час: <b>{car.hourlyPrice} ₽</b>
                         </Typography>
                         {bookingSuccess && (
                             <Alert severity="success" sx={{ mb: 2 }}>
@@ -302,11 +334,19 @@ export default function CarSharingCar() {
                                 disabled={bookingLoading}
                             />
                         </Box>
+                        <Typography sx={{ mb: 2 }}>
+                            {duration > 0 && (
+                                <>
+                                    Длительность: <b>{duration} ч.</b><br />
+                                    Итоговая стоимость: <b>{totalPrice} ₽</b>
+                                </>
+                            )}
+                        </Typography>
                         <Button
                             type="submit"
                             variant="contained"
                             sx={{ backgroundColor: '#000', color: '#fff' }}
-                            disabled={bookingLoading}
+                            disabled={bookingLoading || !startDateTime || !endDateTime || duration <= 0}
                         >
                             {bookingLoading ? 'Отправка...' : 'Забронировать'}
                         </Button>
@@ -377,6 +417,48 @@ export default function CarSharingCar() {
                     </InfoCard>
                 </Grid>
             </Grid>
+
+            {/* Модалка подтверждения бронирования */}
+            <Dialog open={showBookingModal} onClose={() => setShowBookingModal(false)}>
+                <DialogTitle>Подтвердить бронирование</DialogTitle>
+                <DialogContent>
+                    <Typography sx={{ mb: 1 }}>
+                        <b>Машина:</b> {car.brand?.name} {car.model}
+                    </Typography>
+                    <Typography sx={{ mb: 1 }}>
+                        <b>С:</b> {startDateTime.replace('T', ' ')}
+                    </Typography>
+                    <Typography sx={{ mb: 1 }}>
+                        <b>По:</b> {endDateTime.replace('T', ' ')}
+                    </Typography>
+                    <Typography sx={{ mb: 1 }}>
+                        <b>Длительность:</b> {duration} ч.
+                    </Typography>
+                    <Typography sx={{ mb: 1 }}>
+                        <b>Цена за час:</b> {car.hourlyPrice} ₽
+                    </Typography>
+                    <Typography sx={{ mb: 1 }}>
+                        <b>Итого:</b> {totalPrice} ₽
+                    </Typography>
+                    {bookingError && (
+                        <Alert severity="error" sx={{ mt: 2 }}>
+                            {bookingError}
+                        </Alert>
+                    )}
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setShowBookingModal(false)} disabled={bookingLoading}>
+                        Отмена
+                    </Button>
+                    <Button
+                        onClick={handleConfirmBooking}
+                        variant="contained"
+                        disabled={bookingLoading}
+                    >
+                        {bookingLoading ? 'Бронирование...' : 'Подтвердить'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
 
             {/* Модалка для добавления характеристики */}
             <Dialog open={openAdd} onClose={() => setOpenAdd(false)}>

@@ -31,6 +31,8 @@ const Car = sequelize.define("Car", {
         allowNull: false,
         defaultValue: 'DAILY',
     },
+    dailyPrice: { type: DataTypes.DECIMAL(10, 2), allowNull: false, defaultValue: 0 },
+    hourlyPrice: { type: DataTypes.DECIMAL(10, 2), allowNull: false, defaultValue: 0 },
 });
 
 const CarInfo = sequelize.define("CarInfo", {

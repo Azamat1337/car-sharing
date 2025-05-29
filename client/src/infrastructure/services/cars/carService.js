@@ -11,7 +11,7 @@ export const carService = {
             .get(`/car/${id}`)
             .then(res => res.data),
 
-    create: ({ model, year, brandId, available = true, img, info, rentalType }) => {
+    create: ({ model, year, brandId, available = true, img, info, rentalType, dailyPrice, hourlyPrice }) => {
         const formData = new FormData();
         formData.append('model', model);
         formData.append('year', year);
@@ -19,7 +19,9 @@ export const carService = {
         formData.append('available', available);
         if (img) formData.append('img', img);
         if (info) formData.append('info', JSON.stringify(info));
-        if (rentalType) formData.append('rentalType', rentalType); // добавить rentalType
+        if (rentalType) formData.append('rentalType', rentalType);
+        if (dailyPrice !== undefined) formData.append('dailyPrice', dailyPrice);
+        if (hourlyPrice !== undefined) formData.append('hourlyPrice', hourlyPrice);
         return api
             .post('/car', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
@@ -27,13 +29,15 @@ export const carService = {
             .then(res => res.data);
     },
 
-    update: (id, { model, year, brandId, available, rentalType }) => {
+    update: (id, { model, year, brandId, available, rentalType, dailyPrice, hourlyPrice }) => {
         const updateData = {};
         if (model !== undefined) updateData.model = model;
         if (year !== undefined) updateData.year = year;
         if (brandId !== undefined) updateData.brandId = brandId;
         if (available !== undefined) updateData.available = available;
-        if (rentalType !== undefined) updateData.rentalType = rentalType; // добавить rentalType
+        if (rentalType !== undefined) updateData.rentalType = rentalType;
+        if (dailyPrice !== undefined) updateData.dailyPrice = dailyPrice;
+        if (hourlyPrice !== undefined) updateData.hourlyPrice = hourlyPrice;
         return api
             .put(`/car/${id}`, updateData)
             .then(res => res.data);

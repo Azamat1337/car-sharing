@@ -7,7 +7,7 @@ class CarController {
     // POST /api/cars
     async create(req, res, next) {
         try {
-            const { model, year, brandId, available, info, rentalType } = req.body;
+            const { model, year, brandId, available, info, rentalType, dailyPrice, hourlyPrice } = req.body;
             const { img } = req.files || {};
 
             // Проверяем обязательные поля
@@ -19,6 +19,13 @@ class CarController {
             const brand = await Brand.findByPk(brandId);
             if (!brand) {
                 throw ApiError.notFound(`Brand with id=${brandId} not found`);
+            }
+
+            if ((rentalType === 'DAILY' || rentalType === 'BOTH') && (!dailyPrice || Number(dailyPrice) <= 0)) {
+                throw ApiError.badRequest('dailyPrice должен быть больше 0 для посуточной аренды');
+            }
+            if ((rentalType === 'HOURLY' || rentalType === 'BOTH') && (!hourlyPrice || Number(hourlyPrice) <= 0)) {
+                throw ApiError.badRequest('hourlyPrice должен быть больше 0 для каршеринга');
             }
 
             // Сохраняем файл изображения
@@ -112,7 +119,7 @@ class CarController {
     async update(req, res, next) {
         try {
             const { id } = req.params;
-            const { model, year, brandId, available, rentalType } = req.body;
+            const { model, year, brandId, available, rentalType, dailyPrice, hourlyPrice } = req.body;
             const car = await Car.findByPk(id);
             if (!car) {
                 throw ApiError.notFound(`Car with id=${id} not found`);
@@ -128,6 +135,15 @@ class CarController {
             if (available !== undefined) car.available = available;
             if (rentalType !== undefined) {
                 car.rentalType = rentalType;
+            }
+            if (dailyPrice !== undefined) car.dailyPrice = dailyPrice;
+            if (hourlyPrice !== undefined) car.hourlyPrice = hourlyPrice;
+
+            if ((car.rentalType === 'DAILY' || car.rentalType === 'BOTH') && (!car.dailyPrice || Number(car.dailyPrice) <= 0)) {
+                throw ApiError.badRequest('dailyPrice должен быть больше 0 для посуточной аренды');
+            }
+            if ((car.rentalType === 'HOURLY' || car.rentalType === 'BOTH') && (!car.hourlyPrice || Number(car.hourlyPrice) <= 0)) {
+                throw ApiError.badRequest('hourlyPrice должен быть больше 0 для каршеринга');
             }
 
             await car.save();

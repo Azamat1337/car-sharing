@@ -13,3 +13,4 @@ export const TAXI_ROUTE = '/taxi';
 export const POST_ROUTE = `${BLOG_ROUTE}/post/:id`;
 export const ADMIN_CHAT_ROUTE = `/admin/chats`;
 export const ADMIN_TAXI_ROUTE = `/admin/taxi`;
+export const ADMIN_BOOKING_ROUTE = `/admin/bookings`;
