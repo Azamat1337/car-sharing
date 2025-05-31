@@ -12,7 +12,7 @@ class PostController {
             const limit = Math.max(parseInt(req.query.limit) || DEFAULT_LIMIT, 10);
             const offset = (page - 1) * limit;
 
-            const {count, rows: posts} = await Post.findAndCountAll({
+            const { count, rows: posts } = await Post.findAndCountAll({
                 order: [['publishedAt', 'DESC']],
                 include: [
                     {
@@ -94,7 +94,7 @@ class PostController {
             if (!post) {
                 throw ApiError.notFound(`Post with id=${id} not found`);
             }
-            // При необходимости можно проверить авторство: post.authorId === req.user.id || role ADMIN
+
             post.title = title ?? post.title;
             post.excerpt = excerpt ?? post.excerpt;
             post.content = content ?? post.content;

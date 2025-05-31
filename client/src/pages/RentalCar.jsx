@@ -1,28 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import {
-    Container,
-    Box,
-    Typography,
-    Grid,
-    Card,
-    CardMedia,
-    Table,
-    TableBody,
-    TableRow,
-    TableCell,
-    TextField,
-    Button,
-    Alert,
-    IconButton,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions
-} from '@mui/material';
+import { Container, Typography, Grid } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useParams } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { carService } from '../infrastructure/services/cars/carService';
+
+// Redux selectors & actions
 import {
     getCarInfoRequest,
     carInfoLoadingSelector,
@@ -36,7 +19,6 @@ import {
     createBookingSuccessSelector,
     createBookingReset
 } from '../infrastructure/redux/booking/create/slice';
-
 import {
     createCarInfoRequest,
     createCarInfoReset,
@@ -59,28 +41,19 @@ import {
     updateCarInfoSuccessSelector
 } from '../infrastructure/redux/carInfo/update/slice';
 
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
+// Готовые компоненты
+import CarImageBlock from '../components/Car/CarImageBlock.jsx';
+import CarMainInfo from '../components/Car/CarMainInfo.jsx';
+import CarBookingForm from '../components/Car/CarBookingForm.jsx';
+import BookingConfirmDialog from '../components/Car/BookingConfirmDialog.jsx';
+import CarInfoTable from '../components/Car/CarInfoTable.jsx';
+import CarInfoDialog from '../components/Car/CarInfoDialog.jsx';
 
 const CarPageContainer = styled(Container)(({ theme }) => ({
     backgroundColor: '#fff',
     color: '#000',
     padding: theme.spacing(4),
     minHeight: '100vh'
-}));
-
-const CarImageCard = styled(Card)(({ theme }) => ({
-    boxShadow: 'none',
-    border: '1px solid #ddd',
-    borderRadius: theme.shape.borderRadius
-}));
-
-const InfoCard = styled(Card)(({ theme }) => ({
-    boxShadow: 'none',
-    border: '1px solid #ddd',
-    borderRadius: theme.shape.borderRadius,
-    marginTop: theme.spacing(2),
-    padding: theme.spacing(2)
 }));
 
 export default function CarPage() {
@@ -90,6 +63,7 @@ export default function CarPage() {
     const [car, setCar] = useState(null);
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
+    const [showBookingModal, setShowBookingModal] = useState(false);
 
     // Для модалок характеристик
     const [openAdd, setOpenAdd] = useState(false);
@@ -98,6 +72,7 @@ export default function CarPage() {
     const [attributeName, setAttributeName] = useState('');
     const [attributeValue, setAttributeValue] = useState('');
 
+    // Redux selectors
     const loadingInfo = useSelector(carInfoLoadingSelector);
     const errorInfo = useSelector(carInfoErrorSelector);
     const carInfo = useSelector(carInfoDataSelector);
@@ -124,7 +99,6 @@ export default function CarPage() {
     // Получаем профиль пользователя для проверки роли
     const profile = useSelector(state => state.user.profile);
     const isAdmin = profile?.role === 'ADMIN';
-
 
     useEffect(() => {
         async function fetchCar() {
@@ -166,21 +140,12 @@ export default function CarPage() {
         if (bookingSuccess) {
             setStartDate('');
             setEndDate('');
+            setShowBookingModal(false);
             setTimeout(() => {
                 dispatch(createBookingReset());
             }, 2000);
         }
     }, [bookingSuccess, dispatch]);
-
-    const handleRent = (e) => {
-        e.preventDefault();
-        if (!startDate || !endDate) return;
-        dispatch(createBookingRequest({
-            carId: car.id,
-            startTime: startDate,
-            endTime: endDate
-        }));
-    };
 
     // --- carInfo handlers ---
     const handleOpenAdd = () => {
@@ -189,8 +154,7 @@ export default function CarPage() {
         setOpenAdd(true);
     };
 
-    const handleAddInfo = (e) => {
-        e.preventDefault();
+    const handleAddInfo = () => {
         if (!attributeName.trim() || !attributeValue.trim()) return;
         dispatch(createCarInfoRequest({
             carId: car.id,
@@ -212,14 +176,29 @@ export default function CarPage() {
         setOpenEdit(true);
     };
 
-    const handleEditInfo = (e) => {
-        e.preventDefault();
+    const handleEditInfo = () => {
         if (!attributeName.trim() || !attributeValue.trim()) return;
         dispatch(updateCarInfoRequest({
             carId: car.id,
             infoId: editInfo.id,
             attributeName: attributeName.trim(),
             attributeValue: attributeValue.trim()
+        }));
+    };
+
+    // --- booking handlers ---
+    const handleOpenBookingModal = (e) => {
+        e.preventDefault();
+        if (!startDate || !endDate) return;
+        setShowBookingModal(true);
+    };
+
+    const handleConfirmBooking = () => {
+        setShowBookingModal(false);
+        dispatch(createBookingRequest({
+            carId: car.id,
+            startTime: startDate,
+            endTime: endDate
         }));
     };
 
@@ -237,199 +216,79 @@ export default function CarPage() {
         <CarPageContainer maxWidth="md">
             <Grid container spacing={4}>
                 <Grid item xs={12}>
-                    <CarImageCard>
-                        <CardMedia
-                            component="img"
-                            image={
-                                car.img
-                                    ? (car.img.startsWith('http')
-                                        ? car.img
-                                        : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/static/${car.img}`)
-                                    : null
-                            }
-                            alt={`${car.brand?.name || ''} ${car.model}`}
-                        />
-                    </CarImageCard>
+                    <CarImageBlock car={car} />
                 </Grid>
-
                 <Grid item xs={12} md={8}>
-                    <Typography variant="h4" gutterBottom>
-                        {car.brand?.name} {car.model} ({car.year})
-                    </Typography>
-                    <Typography variant="body1" paragraph>
-                        {car.description || ''}
-                    </Typography>
-
-                    <InfoCard component="form" onSubmit={handleRent}>
-                        <Typography variant="h6" gutterBottom>
-                            Rent this car
-                        </Typography>
-                        {bookingSuccess && (
-                            <Alert severity="success" sx={{ mb: 2 }}>
-                                Заявка на аренду успешно отправлена!
-                            </Alert>
-                        )}
-                        {bookingError && (
-                            <Alert severity="error" sx={{ mb: 2 }}>
-                                {bookingError}
-                            </Alert>
-                        )}
-                        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
-                            <TextField
-                                label="Start Date"
-                                type="date"
-                                name="startDate"
-                                InputLabelProps={{ shrink: true }}
-                                required
-                                sx={{ flex: 1, minWidth: 160 }}
-                                value={startDate}
-                                onChange={e => setStartDate(e.target.value)}
-                                disabled={bookingLoading}
-                            />
-                            <TextField
-                                label="End Date"
-                                type="date"
-                                name="endDate"
-                                InputLabelProps={{ shrink: true }}
-                                required
-                                sx={{ flex: 1, minWidth: 160 }}
-                                value={endDate}
-                                onChange={e => setEndDate(e.target.value)}
-                                disabled={bookingLoading}
-                            />
-                        </Box>
-                        <Button
-                            type="submit"
-                            variant="contained"
-                            sx={{ backgroundColor: '#000', color: '#fff' }}
-                            disabled={bookingLoading}
-                        >
-                            {bookingLoading ? 'Отправка...' : 'Rent Now'}
-                        </Button>
-                    </InfoCard>
+                    <CarMainInfo car={car} />
+                    <CarBookingForm
+                        startDate={startDate}
+                        endDate={endDate}
+                        setStartDate={setStartDate}
+                        setEndDate={setEndDate}
+                        onSubmit={handleOpenBookingModal}
+                        bookingLoading={bookingLoading}
+                        bookingError={bookingError}
+                        bookingSuccess={bookingSuccess}
+                    />
                 </Grid>
-
                 <Grid item xs={12} md={4}>
-                    <InfoCard>
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Typography variant="h6" gutterBottom>
-                                Характеристики
-                            </Typography>
-                            {isAdmin && (
-                                <Button size="small" variant="outlined" onClick={handleOpenAdd}>
-                                    Добавить
-                                </Button>
-                            )}
-                        </Box>
-                        {createError && <Alert severity="error" sx={{ mb: 1 }}>{createError}</Alert>}
-                        {deleteError && <Alert severity="error" sx={{ mb: 1 }}>{deleteError}</Alert>}
-                        {updateError && <Alert severity="error" sx={{ mb: 1 }}>{updateError}</Alert>}
-                        {loadingInfo && <Typography>Загрузка характеристик...</Typography>}
-                        {errorInfo && <Typography color="error">{errorInfo}</Typography>}
-                        {!loadingInfo && !errorInfo && (
-                            <Table size="small">
-                                <TableBody>
-                                    {carInfo.length === 0 && (
-                                        <TableRow>
-                                            <TableCell colSpan={isAdmin ? 3 : 2}>Нет характеристик</TableCell>
-                                        </TableRow>
-                                    )}
-                                    {carInfo.map(info => (
-                                        <TableRow key={info.id}>
-                                            <TableCell component="th" sx={{ borderBottom: 'none', fontWeight: 'bold' }}>
-                                                {info.attributeName}
-                                            </TableCell>
-                                            <TableCell sx={{ borderBottom: 'none' }}>{info.attributeValue}</TableCell>
-                                            {isAdmin && (
-                                                <TableCell sx={{ borderBottom: 'none', whiteSpace: 'nowrap' }}>
-                                                    <IconButton
-                                                        size="small"
-                                                        color="primary"
-                                                        onClick={() => handleOpenEdit(info)}
-                                                        disabled={updateLoading}
-                                                    >
-                                                        <EditIcon fontSize="small" />
-                                                    </IconButton>
-                                                    <IconButton
-                                                        size="small"
-                                                        color="error"
-                                                        onClick={() => handleDeleteInfo(info.id)}
-                                                        disabled={deleteLoading}
-                                                    >
-                                                        <DeleteIcon fontSize="small" />
-                                                    </IconButton>
-                                                </TableCell>
-                                            )}
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        )}
-                    </InfoCard>
+                    <CarInfoTable
+                        carInfo={carInfo}
+                        isAdmin={isAdmin}
+                        onAdd={handleOpenAdd}
+                        onEdit={handleOpenEdit}
+                        onDelete={handleDeleteInfo}
+                        loading={loadingInfo}
+                        error={errorInfo}
+                        createError={createError}
+                        deleteError={deleteError}
+                        updateError={updateError}
+                        createLoading={createLoading}
+                        deleteLoading={deleteLoading}
+                        updateLoading={updateLoading}
+                    />
                 </Grid>
             </Grid>
 
+            {/* Модалка подтверждения бронирования */}
+            <BookingConfirmDialog
+                open={showBookingModal}
+                onClose={() => setShowBookingModal(false)}
+                onConfirm={handleConfirmBooking}
+                car={car}
+                startDate={startDate}
+                endDate={endDate}
+                loading={bookingLoading}
+                error={bookingError}
+            />
+
             {/* Модалка для добавления характеристики */}
-            <Dialog open={openAdd} onClose={() => setOpenAdd(false)}>
-                <DialogTitle>Добавить характеристику</DialogTitle>
-                <DialogContent>
-                    <Box component="form" onSubmit={handleAddInfo} sx={{ mt: 1 }}>
-                        <TextField
-                            label="Название"
-                            value={attributeName}
-                            onChange={e => setAttributeName(e.target.value)}
-                            fullWidth
-                            required
-                            sx={{ mb: 2 }}
-                        />
-                        <TextField
-                            label="Значение"
-                            value={attributeValue}
-                            onChange={e => setAttributeValue(e.target.value)}
-                            fullWidth
-                            required
-                        />
-                    </Box>
-                    {createLoading && <Typography sx={{ mt: 1 }}>Добавление...</Typography>}
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setOpenAdd(false)} disabled={createLoading}>Отмена</Button>
-                    <Button onClick={handleAddInfo} variant="contained" disabled={createLoading}>
-                        Добавить
-                    </Button>
-                </DialogActions>
-            </Dialog>
+            <CarInfoDialog
+                open={openAdd}
+                onClose={() => setOpenAdd(false)}
+                onSubmit={handleAddInfo}
+                attributeName={attributeName}
+                attributeValue={attributeValue}
+                setAttributeName={setAttributeName}
+                setAttributeValue={setAttributeValue}
+                loading={createLoading}
+                error={createError}
+                isEdit={false}
+            />
 
             {/* Модалка для редактирования характеристики */}
-            <Dialog open={openEdit} onClose={() => setOpenEdit(false)}>
-                <DialogTitle>Редактировать характеристику</DialogTitle>
-                <DialogContent>
-                    <Box component="form" onSubmit={handleEditInfo} sx={{ mt: 1 }}>
-                        <TextField
-                            label="Название"
-                            value={attributeName}
-                            onChange={e => setAttributeName(e.target.value)}
-                            fullWidth
-                            required
-                            sx={{ mb: 2 }}
-                        />
-                        <TextField
-                            label="Значение"
-                            value={attributeValue}
-                            onChange={e => setAttributeValue(e.target.value)}
-                            fullWidth
-                            required
-                        />
-                    </Box>
-                    {updateLoading && <Typography sx={{ mt: 1 }}>Сохранение...</Typography>}
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setOpenEdit(false)} disabled={updateLoading}>Отмена</Button>
-                    <Button onClick={handleEditInfo} variant="contained" disabled={updateLoading}>
-                        Сохранить
-                    </Button>
-                </DialogActions>
-            </Dialog>
+            <CarInfoDialog
+                open={openEdit}
+                onClose={() => setOpenEdit(false)}
+                onSubmit={handleEditInfo}
+                attributeName={attributeName}
+                attributeValue={attributeValue}
+                setAttributeName={setAttributeName}
+                setAttributeValue={setAttributeValue}
+                loading={updateLoading}
+                error={updateError}
+                isEdit={true}
+            />
         </CarPageContainer>
     );
 }

@@ -1,18 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import {
-    Container,
-    Box,
-    Typography,
-    List,
-    ListItem,
-    ListItemText,
-    Grid,
-    TextField
-} from '@mui/material';
+import { Container, Box, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import Card from '@mui/material/Card';
-import CardMedia from '@mui/material/CardMedia';
-import CardContent from '@mui/material/CardContent';
 import { useNavigate } from "react-router";
 import { RENTAL_CAR_ROUTE } from "../infrastructure/routes/index.js";
 import { useDispatch, useSelector } from 'react-redux';
@@ -24,21 +12,14 @@ import {
 } from '../infrastructure/redux/car/getAll/slice.js';
 import { getBrandsDataSelector, getBrandsRequest } from '../infrastructure/redux/brand/get/slice.js';
 
+import CarListFilter from '../components/CarList/CarListFilter.jsx';
+import CarListGrid from '../components/CarList/CarListGrid.jsx';
+
 const FilterContainer = styled(Box)(({ theme }) => ({
     padding: theme.spacing(2),
     borderRight: `1px solid ${theme.palette.divider}`,
     borderRadius: theme.shape.borderRadius,
     backgroundColor: theme.palette.background.paper,
-}));
-
-const CarCard = styled(Card)(({ theme }) => ({
-    height: '100%',
-    borderRadius: theme.shape.borderRadius,
-    boxShadow: theme.shadows[1],
-    transition: 'box-shadow 0.2s ease-in-out',
-    '&:hover': {
-        boxShadow: theme.shadows[4],
-    },
 }));
 
 export default function RentalList() {
@@ -63,23 +44,27 @@ export default function RentalList() {
     const goToCar = (id) => {
         const path = RENTAL_CAR_ROUTE.replace(':id', id);
         navigate(path);
-    }
+    };
 
-    const handleSearchKeyDown = (e) => {
-        if (e.key === 'Enter') {
-            dispatch(getAllCarsRequest({ model: search, rentalType: ['DAILY', 'BOTH'] }));
-        }
-    }
-
-    const handleBrandClick = (brand) => {
-        setSelectedBrand(brand.id);
-        dispatch(getAllCarsRequest({ brandId: brand.id, rentalType: ['DAILY', 'BOTH'] }));
-    }
-
+    // Фильтрация по году
     const filteredCars = cars.filter(car =>
         (!yearFrom || car.year >= Number(yearFrom)) &&
         (!yearTo || car.year <= Number(yearTo))
     );
+
+    // Обработчики для фильтра
+    const handleBrandChange = (brandId) => {
+        setSelectedBrand(brandId);
+        dispatch(getAllCarsRequest({ brandId, rentalType: ['DAILY', 'BOTH'] }));
+    };
+
+    const handleSearchChange = (value) => {
+        setSearch(value);
+        dispatch(getAllCarsRequest({ model: value, rentalType: ['DAILY', 'BOTH'] }));
+    };
+
+    const handleYearFromChange = (value) => setYearFrom(value);
+    const handleYearToChange = (value) => setYearTo(value);
 
     return (
         <Container maxWidth="lg" sx={{ py: 4, backgroundColor: 'white' }}>
@@ -87,93 +72,27 @@ export default function RentalList() {
                 Car Rental Inventory
             </Typography>
 
-            <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
-                <TextField
-                    label="Search by model"
-                    variant="outlined"
-                    size="small"
-                    sx={{ flex: 1, minWidth: 200 }}
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    onKeyDown={handleSearchKeyDown}
-                />
-                <TextField
-                    label="Year from"
-                    variant="outlined"
-                    size="small"
-                    type="number"
-                    value={yearFrom}
-                    onChange={e => setYearFrom(e.target.value)}
-                    InputProps={{ inputProps: { min: 2000, max: new Date().getFullYear() } }}
-                    sx={{ width: 120 }}
-                />
-                <TextField
-                    label="Year to"
-                    variant="outlined"
-                    size="small"
-                    type="number"
-                    value={yearTo}
-                    onChange={e => setYearTo(e.target.value)}
-                    InputProps={{ inputProps: { min: 2000, max: new Date().getFullYear() } }}
-                    sx={{ width: 120 }}
-                />
-            </Box>
-
             <Box sx={{ display: 'flex', gap: 4 }}>
-                <FilterContainer sx={{ width: 240, cursor: 'pointer' }}>
-                    <Typography variant="h6" gutterBottom color="textPrimary">
-                        Filter by Brand
-                    </Typography>
-                    <List>
-                        {brands.map((brand) => (
-                            <ListItem
-                                button
-                                key={brand.id}
-                                selected={selectedBrand === brand.id}
-                                onClick={() => handleBrandClick(brand)}
-                            >
-                                <ListItemText primary={brand.name} />
-                            </ListItem>
-                        ))}
-                    </List>
+                <FilterContainer sx={{ width: 240 }}>
+                    <CarListFilter
+                        brands={brands}
+                        selectedBrand={selectedBrand}
+                        onBrandChange={handleBrandChange}
+                        search={search}
+                        onSearchChange={handleSearchChange}
+                        yearFrom={yearFrom}
+                        onYearFromChange={handleYearFromChange}
+                        yearTo={yearTo}
+                        onYearToChange={handleYearToChange}
+                    />
                 </FilterContainer>
-
                 <Box sx={{ flexGrow: 1 }}>
-                    {loading && (
-                        <Typography align="center" sx={{ mt: 4 }}>Загрузка...</Typography>
-                    )}
-                    {error && (
-                        <Typography align="center" color="error" sx={{ mt: 4 }}>{error}</Typography>
-                    )}
-                    {!loading && !error && (
-                        <Grid container spacing={3}>
-                            {filteredCars.length === 0 && (
-                                <Grid item xs={12}>
-                                    <Typography align="center">Нет машин для отображения</Typography>
-                                </Grid>
-                            )}
-                            {filteredCars.map((car) => (
-                                <Grid item xs={12} sm={6} md={4} key={car.id}>
-                                    <CarCard sx={{ cursor: 'pointer' }} onClick={() => goToCar(car.id)}>
-                                        <CardMedia
-                                            component="img"
-                                            height="160"
-                                            image={car.img?.startsWith('http') ? car.img : (car.img ? `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/static/${car.img}` : null)}
-                                            alt={`${car.brand?.name} ${car.model}`}
-                                        />
-                                        <CardContent>
-                                            <Typography variant="h6">
-                                                {car.brand?.name} {car.model}
-                                            </Typography>
-                                            <Typography variant="body2" color="text.secondary">
-                                                {car.year}
-                                            </Typography>
-                                        </CardContent>
-                                    </CarCard>
-                                </Grid>
-                            ))}
-                        </Grid>
-                    )}
+                    <CarListGrid
+                        cars={filteredCars}
+                        loading={loading}
+                        error={error}
+                        onCarClick={goToCar}
+                    />
                 </Box>
             </Box>
         </Container>

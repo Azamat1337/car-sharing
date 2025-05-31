@@ -1,28 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import {
-    Container,
-    Box,
-    Typography,
-    Grid,
-    Card,
-    CardMedia,
-    Table,
-    TableBody,
-    TableRow,
-    TableCell,
-    TextField,
-    Button,
-    Alert,
-    IconButton,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions
-} from '@mui/material';
-import { styled } from '@mui/material/styles';
 import { useParams } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
+import { Container, Grid, Typography } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import { carService } from '../infrastructure/services/cars/carService';
+
+// Redux selectors & actions
 import {
     getCarInfoRequest,
     carInfoLoadingSelector,
@@ -36,7 +19,6 @@ import {
     createBookingSuccessSelector,
     createBookingReset
 } from '../infrastructure/redux/booking/create/slice';
-
 import {
     createCarInfoRequest,
     createCarInfoReset,
@@ -59,30 +41,18 @@ import {
     updateCarInfoSuccessSelector
 } from '../infrastructure/redux/carInfo/update/slice';
 
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
+import CarImageBlock from '../components/Car/CarImageBlock.jsx';
+import CarMainInfo from '../components/Car/CarMainInfo.jsx';
+import CarBookingForm from '../components/Car/CarBookingForm.jsx';
+import BookingConfirmDialog from '../components/Car/BookingConfirmDialog.jsx';
+import CarInfoTable from '../components/Car/CarInfoTable.jsx';
+import CarInfoDialog from '../components/Car/CarInfoDialog.jsx';
 
 const CarPageContainer = styled(Container)(({ theme }) => ({
     backgroundColor: theme.palette.mode === 'dark' ? '#181818' : '#fff',
     color: theme.palette.mode === 'dark' ? '#fff' : '#000',
     padding: theme.spacing(4),
     minHeight: '100vh'
-}));
-
-const CarImageCard = styled(Card)(({ theme }) => ({
-    boxShadow: 'none',
-    border: '1px solid #333',
-    borderRadius: theme.shape.borderRadius,
-    background: theme.palette.mode === 'dark' ? '#111' : '#fff'
-}));
-
-const InfoCard = styled(Card)(({ theme }) => ({
-    boxShadow: 'none',
-    border: '1px solid #333',
-    borderRadius: theme.shape.borderRadius,
-    marginTop: theme.spacing(2),
-    padding: theme.spacing(2),
-    background: theme.palette.mode === 'dark' ? '#222' : '#fafafa'
 }));
 
 export default function CarSharingCar() {
@@ -93,8 +63,6 @@ export default function CarSharingCar() {
     const [startDateTime, setStartDateTime] = useState('');
     const [endDateTime, setEndDateTime] = useState('');
     const [showBookingModal, setShowBookingModal] = useState(false);
-    const [totalPrice, setTotalPrice] = useState(0);
-    const [duration, setDuration] = useState(0);
 
     // Для модалок характеристик
     const [openAdd, setOpenAdd] = useState(false);
@@ -103,6 +71,7 @@ export default function CarSharingCar() {
     const [attributeName, setAttributeName] = useState('');
     const [attributeValue, setAttributeValue] = useState('');
 
+    // Redux selectors
     const loadingInfo = useSelector(carInfoLoadingSelector);
     const errorInfo = useSelector(carInfoErrorSelector);
     const carInfo = useSelector(carInfoDataSelector);
@@ -130,6 +99,7 @@ export default function CarSharingCar() {
     const profile = useSelector(state => state.user.profile);
     const isAdmin = profile?.role === 'ADMIN';
 
+    // Получение данных о машине и характеристиках
     useEffect(() => {
         async function fetchCar() {
             try {
@@ -177,41 +147,6 @@ export default function CarSharingCar() {
         }
     }, [bookingSuccess, dispatch]);
 
-    // Расчет стоимости и длительности бронирования
-    useEffect(() => {
-        if (car && startDateTime && endDateTime) {
-            const start = new Date(startDateTime);
-            const end = new Date(endDateTime);
-            let hours = (end - start) / (1000 * 60 * 60);
-            if (hours > 0) {
-                hours = Math.ceil(hours);
-                setDuration(hours);
-                setTotalPrice(hours * Number(car.hourlyPrice || 0));
-            } else {
-                setDuration(0);
-                setTotalPrice(0);
-            }
-        } else {
-            setDuration(0);
-            setTotalPrice(0);
-        }
-    }, [car, startDateTime, endDateTime]);
-
-    const handleOpenBookingModal = (e) => {
-        e.preventDefault();
-        if (!startDateTime || !endDateTime) return;
-        setShowBookingModal(true);
-    };
-
-    const handleConfirmBooking = () => {
-        setShowBookingModal(false);
-        dispatch(createBookingRequest({
-            carId: car.id,
-            startTime: startDateTime,
-            endTime: endDateTime
-        }));
-    };
-
     // --- carInfo handlers ---
     const handleOpenAdd = () => {
         setAttributeName('');
@@ -219,8 +154,7 @@ export default function CarSharingCar() {
         setOpenAdd(true);
     };
 
-    const handleAddInfo = (e) => {
-        e.preventDefault();
+    const handleAddInfo = () => {
         if (!attributeName.trim() || !attributeValue.trim()) return;
         dispatch(createCarInfoRequest({
             carId: car.id,
@@ -242,14 +176,29 @@ export default function CarSharingCar() {
         setOpenEdit(true);
     };
 
-    const handleEditInfo = (e) => {
-        e.preventDefault();
+    const handleEditInfo = () => {
         if (!attributeName.trim() || !attributeValue.trim()) return;
         dispatch(updateCarInfoRequest({
             carId: car.id,
             infoId: editInfo.id,
             attributeName: attributeName.trim(),
             attributeValue: attributeValue.trim()
+        }));
+    };
+
+    // --- booking handlers ---
+    const handleOpenBookingModal = (e) => {
+        e.preventDefault();
+        if (!startDateTime || !endDateTime) return;
+        setShowBookingModal(true);
+    };
+
+    const handleConfirmBooking = () => {
+        setShowBookingModal(false);
+        dispatch(createBookingRequest({
+            carId: car.id,
+            startTime: startDateTime,
+            endTime: endDateTime
         }));
     };
 
@@ -267,260 +216,79 @@ export default function CarSharingCar() {
         <CarPageContainer maxWidth="md">
             <Grid container spacing={4}>
                 <Grid item xs={12}>
-                    <CarImageCard>
-                        <CardMedia
-                            component="img"
-                            image={
-                                car.img
-                                    ? (car.img.startsWith('http')
-                                        ? car.img
-                                        : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/static/${car.img}`)
-                                    : 'https://via.placeholder.com/600x300?text=Car'
-                            }
-                            alt={`${car.brand?.name || ''} ${car.model}`}
-                            sx={{
-                                filter: 'grayscale(1)',
-                                background: '#222'
-                            }}
-                        />
-                    </CarImageCard>
+                    <CarImageBlock car={car} />
                 </Grid>
-
                 <Grid item xs={12} md={8}>
-                    <Typography variant="h4" gutterBottom>
-                        {car.brand?.name} {car.model} ({car.year})
-                    </Typography>
-                    <Typography variant="body1" paragraph>
-                        {car.description || ''}
-                    </Typography>
-                    <InfoCard component="form" onSubmit={handleOpenBookingModal}>
-                        <Typography variant="h6" gutterBottom>
-                            Почасовая аренда
-                        </Typography>
-                        <Typography sx={{ mb: 1 }}>
-                            Цена за час: <b>{car.hourlyPrice} ₽</b>
-                        </Typography>
-                        {bookingSuccess && (
-                            <Alert severity="success" sx={{ mb: 2 }}>
-                                Заявка на аренду успешно отправлена!
-                            </Alert>
-                        )}
-                        {bookingError && (
-                            <Alert severity="error" sx={{ mb: 2 }}>
-                                {bookingError}
-                            </Alert>
-                        )}
-                        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
-                            <TextField
-                                label="Начало"
-                                type="datetime-local"
-                                name="startDateTime"
-                                InputLabelProps={{ shrink: true }}
-                                required
-                                sx={{ flex: 1, minWidth: 180 }}
-                                value={startDateTime}
-                                onChange={e => setStartDateTime(e.target.value)}
-                                disabled={bookingLoading}
-                            />
-                            <TextField
-                                label="Окончание"
-                                type="datetime-local"
-                                name="endDateTime"
-                                InputLabelProps={{ shrink: true }}
-                                required
-                                sx={{ flex: 1, minWidth: 180 }}
-                                value={endDateTime}
-                                onChange={e => setEndDateTime(e.target.value)}
-                                disabled={bookingLoading}
-                            />
-                        </Box>
-                        <Typography sx={{ mb: 2 }}>
-                            {duration > 0 && (
-                                <>
-                                    Длительность: <b>{duration} ч.</b><br />
-                                    Итоговая стоимость: <b>{totalPrice} ₽</b>
-                                </>
-                            )}
-                        </Typography>
-                        <Button
-                            type="submit"
-                            variant="contained"
-                            sx={{ backgroundColor: '#000', color: '#fff' }}
-                            disabled={bookingLoading || !startDateTime || !endDateTime || duration <= 0}
-                        >
-                            {bookingLoading ? 'Отправка...' : 'Забронировать'}
-                        </Button>
-                    </InfoCard>
+                    <CarMainInfo car={car} />
+                    <CarBookingForm
+                        startDate={startDateTime}
+                        endDate={endDateTime}
+                        setStartDate={setStartDateTime}
+                        setEndDate={setEndDateTime}
+                        onSubmit={handleOpenBookingModal}
+                        bookingLoading={bookingLoading}
+                        bookingError={bookingError}
+                        bookingSuccess={bookingSuccess}
+                    />
                 </Grid>
-
                 <Grid item xs={12} md={4}>
-                    <InfoCard>
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Typography variant="h6" gutterBottom>
-                                Характеристики
-                            </Typography>
-                            {isAdmin && (
-                                <Button size="small" variant="outlined" onClick={handleOpenAdd}>
-                                    Добавить
-                                </Button>
-                            )}
-                        </Box>
-                        {createError && <Alert severity="error" sx={{ mb: 1 }}>{createError}</Alert>}
-                        {deleteError && <Alert severity="error" sx={{ mb: 1 }}>{deleteError}</Alert>}
-                        {updateError && <Alert severity="error" sx={{ mb: 1 }}>{updateError}</Alert>}
-                        {loadingInfo && <Typography>Загрузка характеристик...</Typography>}
-                        {errorInfo && <Typography color="error">{errorInfo}</Typography>}
-                        {!loadingInfo && !errorInfo && (
-                            <Table size="small">
-                                <TableBody>
-                                    {carInfo.length === 0 && (
-                                        <TableRow>
-                                            <TableCell colSpan={isAdmin ? 3 : 2}>Нет характеристик</TableCell>
-                                        </TableRow>
-                                    )}
-                                    {carInfo.map(info => (
-                                        <TableRow key={info.id}>
-                                            <TableCell
-                                                component="th"
-                                                sx={{ borderBottom: 'none', fontWeight: 'bold', color: 'inherit' }}
-                                            >
-                                                {info.attributeName}
-                                            </TableCell>
-                                            <TableCell sx={{ borderBottom: 'none', color: 'inherit' }}>
-                                                {info.attributeValue}
-                                            </TableCell>
-                                            {isAdmin && (
-                                                <TableCell sx={{ borderBottom: 'none', whiteSpace: 'nowrap' }}>
-                                                    <IconButton
-                                                        size="small"
-                                                        color="primary"
-                                                        onClick={() => handleOpenEdit(info)}
-                                                        disabled={updateLoading}
-                                                    >
-                                                        <EditIcon fontSize="small" />
-                                                    </IconButton>
-                                                    <IconButton
-                                                        size="small"
-                                                        color="error"
-                                                        onClick={() => handleDeleteInfo(info.id)}
-                                                        disabled={deleteLoading}
-                                                    >
-                                                        <DeleteIcon fontSize="small" />
-                                                    </IconButton>
-                                                </TableCell>
-                                            )}
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        )}
-                    </InfoCard>
+                    <CarInfoTable
+                        carInfo={carInfo}
+                        isAdmin={isAdmin}
+                        onAdd={handleOpenAdd}
+                        onEdit={handleOpenEdit}
+                        onDelete={handleDeleteInfo}
+                        loading={loadingInfo}
+                        error={errorInfo}
+                        createError={createError}
+                        deleteError={deleteError}
+                        updateError={updateError}
+                        createLoading={createLoading}
+                        deleteLoading={deleteLoading}
+                        updateLoading={updateLoading}
+                    />
                 </Grid>
             </Grid>
 
             {/* Модалка подтверждения бронирования */}
-            <Dialog open={showBookingModal} onClose={() => setShowBookingModal(false)}>
-                <DialogTitle>Подтвердить бронирование</DialogTitle>
-                <DialogContent>
-                    <Typography sx={{ mb: 1 }}>
-                        <b>Машина:</b> {car.brand?.name} {car.model}
-                    </Typography>
-                    <Typography sx={{ mb: 1 }}>
-                        <b>С:</b> {startDateTime.replace('T', ' ')}
-                    </Typography>
-                    <Typography sx={{ mb: 1 }}>
-                        <b>По:</b> {endDateTime.replace('T', ' ')}
-                    </Typography>
-                    <Typography sx={{ mb: 1 }}>
-                        <b>Длительность:</b> {duration} ч.
-                    </Typography>
-                    <Typography sx={{ mb: 1 }}>
-                        <b>Цена за час:</b> {car.hourlyPrice} ₽
-                    </Typography>
-                    <Typography sx={{ mb: 1 }}>
-                        <b>Итого:</b> {totalPrice} ₽
-                    </Typography>
-                    {bookingError && (
-                        <Alert severity="error" sx={{ mt: 2 }}>
-                            {bookingError}
-                        </Alert>
-                    )}
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setShowBookingModal(false)} disabled={bookingLoading}>
-                        Отмена
-                    </Button>
-                    <Button
-                        onClick={handleConfirmBooking}
-                        variant="contained"
-                        disabled={bookingLoading}
-                    >
-                        {bookingLoading ? 'Бронирование...' : 'Подтвердить'}
-                    </Button>
-                </DialogActions>
-            </Dialog>
+            <BookingConfirmDialog
+                open={showBookingModal}
+                onClose={() => setShowBookingModal(false)}
+                onConfirm={handleConfirmBooking}
+                car={car}
+                startDate={startDateTime}
+                endDate={endDateTime}
+                loading={bookingLoading}
+                error={bookingError}
+            />
 
             {/* Модалка для добавления характеристики */}
-            <Dialog open={openAdd} onClose={() => setOpenAdd(false)}>
-                <DialogTitle>Добавить характеристику</DialogTitle>
-                <DialogContent>
-                    <Box component="form" onSubmit={handleAddInfo} sx={{ mt: 1 }}>
-                        <TextField
-                            label="Название"
-                            value={attributeName}
-                            onChange={e => setAttributeName(e.target.value)}
-                            fullWidth
-                            required
-                            sx={{ mb: 2 }}
-                        />
-                        <TextField
-                            label="Значение"
-                            value={attributeValue}
-                            onChange={e => setAttributeValue(e.target.value)}
-                            fullWidth
-                            required
-                        />
-                    </Box>
-                    {createLoading && <Typography sx={{ mt: 1 }}>Добавление...</Typography>}
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setOpenAdd(false)} disabled={createLoading}>Отмена</Button>
-                    <Button onClick={handleAddInfo} variant="contained" disabled={createLoading}>
-                        Добавить
-                    </Button>
-                </DialogActions>
-            </Dialog>
+            <CarInfoDialog
+                open={openAdd}
+                onClose={() => setOpenAdd(false)}
+                onSubmit={handleAddInfo}
+                attributeName={attributeName}
+                attributeValue={attributeValue}
+                setAttributeName={setAttributeName}
+                setAttributeValue={setAttributeValue}
+                loading={createLoading}
+                error={createError}
+                isEdit={false}
+            />
 
             {/* Модалка для редактирования характеристики */}
-            <Dialog open={openEdit} onClose={() => setOpenEdit(false)}>
-                <DialogTitle>Редактировать характеристику</DialogTitle>
-                <DialogContent>
-                    <Box component="form" onSubmit={handleEditInfo} sx={{ mt: 1 }}>
-                        <TextField
-                            label="Название"
-                            value={attributeName}
-                            onChange={e => setAttributeName(e.target.value)}
-                            fullWidth
-                            required
-                            sx={{ mb: 2 }}
-                        />
-                        <TextField
-                            label="Значение"
-                            value={attributeValue}
-                            onChange={e => setAttributeValue(e.target.value)}
-                            fullWidth
-                            required
-                        />
-                    </Box>
-                    {updateLoading && <Typography sx={{ mt: 1 }}>Сохранение...</Typography>}
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setOpenEdit(false)} disabled={updateLoading}>Отмена</Button>
-                    <Button onClick={handleEditInfo} variant="contained" disabled={updateLoading}>
-                        Сохранить
-                    </Button>
-                </DialogActions>
-            </Dialog>
+            <CarInfoDialog
+                open={openEdit}
+                onClose={() => setOpenEdit(false)}
+                onSubmit={handleEditInfo}
+                attributeName={attributeName}
+                attributeValue={attributeValue}
+                setAttributeName={setAttributeName}
+                setAttributeValue={setAttributeValue}
+                loading={updateLoading}
+                error={updateError}
+                isEdit={true}
+            />
         </CarPageContainer>
     );
 }

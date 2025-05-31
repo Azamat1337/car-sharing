@@ -28,6 +28,7 @@ import createCarInfoReducer from '../carInfo/create/slice.js';
 import updateCarInfoReducer from '../carInfo/update/slice.js';
 import deleteCarInfoReducer from '../carInfo/delete/slice.js';
 import updateBookingReducer from '../booking/update/slice.js';
+import updateBrandReducer from '../brand/update/slice.js';
 
 import { GET_BRANDS } from "../brand/get/slice.js";
 import { ADD_BRAND } from "../brand/add/slice.js";
@@ -58,6 +59,7 @@ import { CREATE_CAR_INFO } from "../carInfo/create/slice.js";
 import { UPDATE_CAR_INFO } from "../carInfo/update/slice.js";
 import { DELETE_CAR_INFO } from "../carInfo/delete/slice.js";
 import { UPDATE_BOOKING } from "../booking/update/slice.js";
+import { UPDATE_BRAND } from "../brand/update/slice.js";
 
 const rootReducer = combineReducers({
     [FETCH_NEWS]: newsReducer,
@@ -89,6 +91,7 @@ const rootReducer = combineReducers({
     [UPDATE_CAR_INFO]: updateCarInfoReducer,
     [DELETE_CAR_INFO]: deleteCarInfoReducer,
     [UPDATE_BOOKING]: updateBookingReducer,
+    [UPDATE_BRAND]: updateBrandReducer,
 })
 
 export default rootReducer;

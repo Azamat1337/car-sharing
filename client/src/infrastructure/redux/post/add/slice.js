@@ -1,4 +1,4 @@
-import {createSlice} from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
     loading: false,
@@ -25,6 +25,11 @@ const addPostSlice = createSlice({
             state.loading = false;
             state.error = action.payload;
             state.success = false;
+        },
+        addPostReset: (state) => {
+            state.loading = false;
+            state.error = null;
+            state.success = false;
         }
     },
     selectors: {
@@ -34,7 +39,7 @@ const addPostSlice = createSlice({
     }
 })
 
-export const {addPostErrorSelector, addPostLoadingSelector, addPostSuccessSelector} = addPostSlice.selectors;
-export const {addPostFailure, addPostRequest, addPostSuccess} = addPostSlice.actions;
+export const { addPostErrorSelector, addPostLoadingSelector, addPostSuccessSelector } = addPostSlice.selectors;
+export const { addPostFailure, addPostRequest, addPostSuccess, addPostReset } = addPostSlice.actions;
 export default addPostSlice.reducer
 

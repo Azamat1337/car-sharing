@@ -4,6 +4,7 @@ import { AccountCircle } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import { ADMIN_ROUTE, USER_ROUTE } from '../infrastructure/routes/index.js';
 import { logout } from '../infrastructure/redux/user/slice.js';
 
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
@@ -84,21 +85,20 @@ export default function Header() {
                                 }
                             }}
                         >
-                            <MenuItem onClick={() => navigate('/profile')}>
-                                🚗 My Profile
+                            <MenuItem onClick={() => { navigate(USER_ROUTE); setAnchorEl(null); }}>
+                                👤 Профиль
                             </MenuItem>
-                            <MenuItem onClick={() => navigate('/my-cars')}>
-                                🔑 My Bookings
-                            </MenuItem>
-                            <MenuItem onClick={() => navigate('/settings')}>
-                                ⚙️ Settings
-                            </MenuItem>
+                            {role === 'ADMIN' && (
+                                <MenuItem onClick={() => { navigate(ADMIN_ROUTE); setAnchorEl(null); }}>
+                                    🛠️ Админ-панель
+                                </MenuItem>
+                            )}
                             <Divider sx={{ my: 0.5 }} />
                             <MenuItem
                                 onClick={handleLogout}
                                 sx={{ color: 'error.main' }}
                             >
-                                🚪 Logout
+                                🚪 Выйти
                             </MenuItem>
                         </Menu>
                     </Box>
@@ -108,7 +108,7 @@ export default function Header() {
                         startIcon={<AccountCircle />}
                         onClick={() => navigate('/login')}
                     >
-                        Sign In
+                        Войти
                     </Button>
                 )}
             </Toolbar>

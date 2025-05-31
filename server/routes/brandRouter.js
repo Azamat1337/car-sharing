@@ -7,5 +7,6 @@ const router = new Router();
 router.get('/', brandController.getAllBrands);
 router.post('/', checkRoleMiddleware('ADMIN'), brandController.createBrand);
 router.delete('/:id', checkRoleMiddleware('ADMIN'), brandController.deleteBrand);
+router.put('/:id', checkRoleMiddleware('ADMIN'), brandController.updateBrand);
 
 module.exports = router;
