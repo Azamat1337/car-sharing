@@ -11,6 +11,7 @@ import {
     Divider,
     MenuItem,
     Drawer,
+    useTheme
 } from '@mui/material';
 import {
     Menu as MenuIcon,
@@ -35,16 +36,45 @@ const StyledToolbar = styled(Toolbar)(({ theme }) => ({
     backdropFilter: 'blur(24px)',
     border: '1px solid',
     borderColor: (theme.vars || theme).palette.divider,
-    backgroundColor: theme.vars
-        ? `rgba(${theme.vars.palette.background.defaultChannel} / 0.4)`
-        : alpha(theme.palette.background.default, 0.4),
-    boxShadow: (theme.vars || theme).shadows[1],
+    backgroundColor: theme.palette.mode === 'light'
+        ? alpha('#fff', 0.85)
+        : alpha('#111', 0.85),
+    boxShadow: theme.shadows[1],
     padding: '8px 12px',
 }));
+
+const NavButton = styled(Button)(({ theme }) => ({
+    color: theme.palette.mode === 'light' ? '#111' : '#fff',
+    borderColor: theme.palette.mode === 'light' ? '#111' : '#fff',
+    fontWeight: 500,
+    letterSpacing: 1,
+    textTransform: 'none',
+    '&:hover': {
+        backgroundColor: theme.palette.mode === 'light'
+            ? alpha('#000', 0.07)
+            : alpha('#fff', 0.07),
+        borderColor: theme.palette.mode === 'light' ? '#000' : '#fff',
+    },
+}));
+
+const DrawerMenuItem = styled(MenuItem)(({ theme }) => ({
+    color: theme.palette.mode === 'light' ? '#111' : '#fff',
+    fontWeight: 500,
+    letterSpacing: 1,
+    textTransform: 'none',
+    '&:hover': {
+        backgroundColor: theme.palette.mode === 'light'
+            ? alpha('#000', 0.07)
+            : alpha('#fff', 0.07),
+    },
+}));
+
 
 export default function Navbar() {
     const [open, setOpen] = React.useState(false);
     const navigate = useNavigate();
+    const theme = useTheme();
+
     const toggleDrawer = (newOpen) => () => {
         setOpen(newOpen);
     };
@@ -71,41 +101,38 @@ export default function Navbar() {
                         }}
                     >
                         <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-                            <Button
+                            <NavButton
                                 variant='text'
-                                color='info'
                                 size='small'
+                                sx={{ textTransform: 'uppercase' }}
                                 onClick={() => navigate(RENTAL_LIST_ROUTE)}
                             >
-                                Rental
-                            </Button>
-                            <Button
+                                RENTAL
+                            </NavButton>
+                            <NavButton
                                 variant='text'
-                                color='info'
                                 size='small'
-                                sx={{ minWidth: 0 }}
+                                sx={{ minWidth: 0, textTransform: 'uppercase' }}
                                 onClick={() => navigate(CAR_SHARING_LIST_ROUTE)}
                             >
-                                Carsharing
-                            </Button>
-                            <Button
+                                CARSHARING
+                            </NavButton>
+                            <NavButton
                                 variant='text'
-                                color='info'
                                 size='small'
-                                sx={{ minWidth: 0 }}
+                                sx={{ minWidth: 0, textTransform: 'uppercase' }}
                                 onClick={() => navigate(BLOG_ROUTE)}
                             >
-                                Blog
-                            </Button>
-                            <Button
+                                BLOG
+                            </NavButton>
+                            <NavButton
                                 variant='text'
-                                color='info'
                                 size='small'
-                                sx={{ minWidth: 0 }}
+                                sx={{ minWidth: 0, textTransform: 'uppercase' }}
                                 onClick={() => navigate(TAXI_ROUTE)}
                             >
-                                Taxi
-                            </Button>
+                                TAXI
+                            </NavButton>
                         </Box>
                     </Box>
                     <Box
@@ -115,27 +142,40 @@ export default function Navbar() {
                             alignItems: 'center',
                         }}
                     >
-                        <Button
-                            color='primary'
-                            variant='text'
+                        <NavButton
+                            variant='outlined'
                             size='small'
                             onClick={() => navigate(LOGIN_ROUTE)}
                         >
                             Sign in
-                        </Button>
-                        <Button
-                            color='primary'
+                        </NavButton>
+                        <NavButton
                             variant='contained'
                             size='small'
                             onClick={() => navigate(REGISTRATION_ROUTE)}
+                            sx={{
+                                backgroundColor: theme.palette.mode === 'light' ? '#111' : '#fff',
+                                color: theme.palette.mode === 'light' ? '#fff' : '#111',
+                                '&:hover': {
+                                    backgroundColor: theme.palette.mode === 'light'
+                                        ? '#222'
+                                        : '#eee',
+                                    color: theme.palette.mode === 'light'
+                                        ? '#fff'
+                                        : '#111',
+                                }
+                            }}
                         >
                             Sign up
-                        </Button>
+                        </NavButton>
                     </Box>
                     <Box sx={{ display: { xs: 'flex', md: 'none' }, gap: 1 }}>
                         <IconButton
                             aria-label='Menu button'
                             onClick={toggleDrawer(true)}
+                            sx={{
+                                color: theme.palette.mode === 'light' ? '#111' : '#fff'
+                            }}
                         >
                             <MenuIcon />
                         </IconButton>
@@ -146,13 +186,18 @@ export default function Navbar() {
                             PaperProps={{
                                 sx: {
                                     top: 'var(--template-frame-height, 0px)',
+                                    backgroundColor: theme.palette.mode === 'light'
+                                        ? '#fff'
+                                        : '#111',
                                 },
                             }}
                         >
                             <Box
                                 sx={{
                                     p: 2,
-                                    backgroundColor: 'background.default',
+                                    backgroundColor: theme.palette.mode === 'light'
+                                        ? '#fff'
+                                        : '#111',
                                 }}
                             >
                                 <Box
@@ -161,36 +206,89 @@ export default function Navbar() {
                                         justifyContent: 'flex-end',
                                     }}
                                 >
-                                    <IconButton onClick={toggleDrawer(false)}>
+                                    <IconButton
+                                        onClick={toggleDrawer(false)}
+                                        sx={{
+                                            color: theme.palette.mode === 'light' ? '#111' : '#fff'
+                                        }}
+                                    >
                                         <CloseRoundedIcon />
                                     </IconButton>
                                 </Box>
 
-                                <MenuItem>Features</MenuItem>
-                                <MenuItem>Testimonials</MenuItem>
-                                <MenuItem>Highlights</MenuItem>
-                                <MenuItem>Pricing</MenuItem>
-                                <MenuItem>FAQ</MenuItem>
-                                <MenuItem>Blog</MenuItem>
-                                <Divider sx={{ my: 3 }} />
-                                <MenuItem>
-                                    <Button
-                                        color='primary'
+                                <DrawerMenuItem
+                                    sx={{ textTransform: 'uppercase' }}
+                                    onClick={() => {
+                                        setOpen(false);
+                                        navigate(RENTAL_LIST_ROUTE);
+                                    }}
+                                >
+                                    RENTAL
+                                </DrawerMenuItem>
+                                <DrawerMenuItem
+                                    sx={{ textTransform: 'uppercase' }}
+                                    onClick={() => {
+                                        setOpen(false);
+                                        navigate(CAR_SHARING_LIST_ROUTE);
+                                    }}
+                                >
+                                    CARSHARING
+                                </DrawerMenuItem>
+                                <DrawerMenuItem
+                                    sx={{ textTransform: 'uppercase' }}
+                                    onClick={() => {
+                                        setOpen(false);
+                                        navigate(BLOG_ROUTE);
+                                    }}
+                                >
+                                    BLOG
+                                </DrawerMenuItem>
+                                <DrawerMenuItem
+                                    sx={{ textTransform: 'uppercase' }}
+                                    onClick={() => {
+                                        setOpen(false);
+                                        navigate(TAXI_ROUTE);
+                                    }}
+                                >
+                                    TAXI
+                                </DrawerMenuItem>
+                                <Divider sx={{ my: 3, borderColor: theme.palette.mode === 'light' ? '#111' : '#fff' }} />
+                                <DrawerMenuItem>
+                                    <NavButton
                                         variant='contained'
                                         fullWidth
+                                        onClick={() => {
+                                            setOpen(false);
+                                            navigate(REGISTRATION_ROUTE);
+                                        }}
+                                        sx={{
+                                            backgroundColor: theme.palette.mode === 'light' ? '#111' : '#fff',
+                                            color: theme.palette.mode === 'light' ? '#fff' : '#111',
+                                            '&:hover': {
+                                                backgroundColor: theme.palette.mode === 'light'
+                                                    ? '#222'
+                                                    : '#eee',
+                                                color: theme.palette.mode === 'light'
+                                                    ? '#fff'
+                                                    : '#111',
+                                            }
+                                        }}
                                     >
                                         Sign up
-                                    </Button>
-                                </MenuItem>
-                                <MenuItem>
-                                    <Button
-                                        color='primary'
+                                    </NavButton>
+                                </DrawerMenuItem>
+                                <DrawerMenuItem>
+                                    <NavButton
                                         variant='outlined'
                                         fullWidth
+                                        onClick={() => {
+                                            setOpen(false);
+                                            navigate(LOGIN_ROUTE);
+                                        }}
                                     >
                                         Sign in
-                                    </Button>
-                                </MenuItem>
+                                    </NavButton>
+                                </DrawerMenuItem>
                             </Box>
                         </Drawer>
                     </Box>

@@ -1,28 +1,44 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Box, Typography } from '@mui/material';
-import { styled } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import { carService } from '../infrastructure/services/cars/carService';
 import { CARSHARING_CAR_ROUTE } from '../infrastructure/routes';
 import { useNavigate } from 'react-router';
-
 import CarListFilter from '../components/CarList/CarListFilter.jsx';
 import CarListGrid from '../components/CarList/CarListGrid.jsx';
 
-const FilterContainer = styled(Box)(({ theme }) => ({
-    padding: theme.spacing(2),
-    borderRight: `1px solid ${theme.palette.divider}`,
-    borderRadius: theme.shape.borderRadius,
-    backgroundColor: theme.palette.mode === 'dark' ? '#222' : theme.palette.background.paper,
-    width: 240,
-    minWidth: 240,
-    boxSizing: 'border-box',
+const StyledContainer = styled(Container)(({ theme }) => ({
+    paddingTop: theme.spacing(4),
+    paddingBottom: theme.spacing(8),
+    minHeight: '100vh',
+    backgroundColor: theme.palette.background.default
+}));
+
+const MainBox = styled(Box)(({ theme }) => ({
     display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(2)
+    gap: theme.spacing(4),
+    [theme.breakpoints.down('md')]: {
+        flexDirection: 'column'
+    }
+}));
+
+const FilterContainer = styled(Box)(({ theme }) => ({
+    width: 280,
+    flexShrink: 0,
+    backgroundColor: theme.palette.background.paper,
+    borderRadius: theme.shape.borderRadius,
+    padding: theme.spacing(3),
+    boxShadow: theme.palette.mode === 'light'
+        ? '0 1px 3px rgba(0,0,0,0.12)'
+        : '0 1px 3px rgba(255,255,255,0.05)',
+    [theme.breakpoints.down('md')]: {
+        width: '100%'
+    }
 }));
 
 export default function CarSharingList() {
     const navigate = useNavigate();
+    const theme = useTheme();
     const [search, setSearch] = useState('');
     const [selectedBrand, setSelectedBrand] = useState('');
     const [yearFrom, setYearFrom] = useState('');
@@ -75,25 +91,26 @@ export default function CarSharingList() {
     const handleYearToChange = (value) => setYearTo(value);
 
     return (
-        <Container maxWidth="lg" sx={{
-            py: 4,
-            backgroundColor: theme => theme.palette.mode === 'dark' ? '#181818' : '#fff',
-            color: theme => theme.palette.mode === 'dark' ? '#fff' : '#000'
-        }}>
+        <StyledContainer maxWidth="lg">
             <Typography
                 variant="h4"
                 gutterBottom
                 sx={{
                     textAlign: 'center',
-                    color: theme => theme.palette.mode === 'dark' ? '#fff' : '#111',
-                    letterSpacing: 2,
-                    fontWeight: 700
+                    color: theme.palette.mode === 'light' ? '#000' : '#fff',
+                    letterSpacing: '0.1em',
+                    fontWeight: 500,
+                    mb: 6,
+                    '& span': {
+                        color: theme.palette.mode === 'light' ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.6)',
+                        fontWeight: 400
+                    }
                 }}
             >
-                Carsharing (Почасовой)
+                Carsharing <span>(Почасовой)</span>
             </Typography>
 
-            <Box sx={{ display: 'flex', gap: 4 }}>
+            <MainBox>
                 <FilterContainer>
                     <CarListFilter
                         brands={brands}
@@ -107,7 +124,18 @@ export default function CarSharingList() {
                         onYearToChange={handleYearToChange}
                     />
                 </FilterContainer>
-                <Box sx={{ flexGrow: 1 }}>
+                <Box
+                    sx={{
+                        flexGrow: 1,
+                        minWidth: 0,
+                        backgroundColor: theme.palette.background.paper,
+                        borderRadius: theme.shape.borderRadius,
+                        padding: theme.spacing(3),
+                        boxShadow: theme.palette.mode === 'light'
+                            ? '0 1px 3px rgba(0,0,0,0.12)'
+                            : '0 1px 3px rgba(255,255,255,0.05)'
+                    }}
+                >
                     <CarListGrid
                         cars={filteredCars}
                         loading={loading}
@@ -115,7 +143,8 @@ export default function CarSharingList() {
                         onCarClick={goToCar}
                     />
                 </Box>
-            </Box>
-        </Container>
+            </MainBox>
+        </StyledContainer>
     );
 }
+

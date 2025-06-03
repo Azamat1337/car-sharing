@@ -8,7 +8,7 @@ class TaxiController {
         try {
             const { fromLocation, toLocation, startTime, price } = req.body;
             if (!fromLocation || !toLocation || !startTime || !price) {
-                throw ApiError.badRequest('Все поля обязательны');
+                throw ApiError.badRequest('All fields are required');
             }
 
             const ride = await Ride.create({
@@ -50,7 +50,7 @@ class TaxiController {
             const { rideId } = req.params;
             const { status } = req.body; // EXPECTED: 'APPROVED' or 'CANCELLED'
             const ride = await Ride.findByPk(rideId);
-            if (!ride) throw ApiError.notFound('Заявка не найдена');
+            if (!ride) throw ApiError.notFound('Ride not found');
             ride.status = status;
             await ride.save();
             return res.json(ride);
@@ -75,17 +75,35 @@ class TaxiController {
             const { rideId } = req.params;
             const ride = await Ride.findByPk(rideId);
             if (!ride || ride.status !== 'APPROVED') {
-                throw ApiError.badRequest('Нельзя присоединиться к этой заявке');
+                throw ApiError.badRequest('Cannot join this ride');
             }
-            // Проверяем что ещё не зарегистрирован
+
+            if (ride.seatsAvailable !== undefined && ride.seatsAvailable <= 0) {
+                throw ApiError.badRequest('No available seats');
+            }
+
             const exists = await RideParticipant.findOne({
                 where: { rideId, userId: req.user.id }
             });
-            if (exists) throw ApiError.badRequest('Вы уже участвуете в этой поездке');
+            if (exists) throw ApiError.badRequest('You are already participating in this ride');
+
+            if (ride.seatsAvailable !== undefined) {
+                ride.seatsAvailable -= 1;
+                await ride.save();
+            }
+
             const part = await RideParticipant.create({
                 rideId, userId: req.user.id
             });
-            return res.status(201).json(part);
+
+            const updatedRide = await Ride.findByPk(rideId, {
+                include: [
+                    { model: User, as: 'creator', attributes: ['id', 'username'] },
+                    { model: RideParticipant, as: 'participants', attributes: ['userId'] }
+                ]
+            });
+
+            return res.status(201).json(updatedRide);
         } catch (err) { next(err); }
     }
 
@@ -94,13 +112,13 @@ class TaxiController {
             const { rideId } = req.params;
             const ride = await Ride.findByPk(rideId);
             if (!ride) {
-                throw ApiError.notFound('Поездка не найдена');
+                throw ApiError.notFound('Ride not found');
             }
             if (ride.userId !== req.user.id) {
-                throw ApiError.forbidden('Вы не можете завершить эту поездку');
+                throw ApiError.forbidden('You cannot complete this ride');
             }
             if (ride.status !== 'APPROVED') {
-                throw ApiError.badRequest('Нельзя завершить поездку в этом статусе');
+                throw ApiError.badRequest('Cannot complete ride in this status');
             }
 
             ride.status = 'COMPLETED';
@@ -117,9 +135,9 @@ class TaxiController {
             const part = await RideParticipant.findOne({
                 where: { rideId, userId: req.user.id }
             });
-            if (!part) throw ApiError.notFound('Вы не участвуете в этой поездке');
+            if (!part) throw ApiError.notFound('You are not participating in this ride');
             await part.destroy();
-            return res.json({ message: 'Вы отменили участие' });
+            return res.json({ message: 'You have left the ride' });
         } catch (err) { next(err); }
     }
 }

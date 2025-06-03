@@ -1,55 +1,62 @@
-import * as React from 'react';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Container from '@mui/material/Container';
-import InputLabel from '@mui/material/InputLabel';
-import Link from '@mui/material/Link';
-import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
+import React from 'react';
+import {
+    Box,
+    Button,
+    Container,
+    InputLabel,
+    Stack,
+    TextField,
+    Typography,
+    useTheme
+} from '@mui/material';
 import visuallyHidden from '@mui/utils/visuallyHidden';
-import { styled } from '@mui/material/styles';
+import { styled, alpha } from '@mui/material/styles';
+import { useNavigate } from 'react-router';
+import { REGISTRATION_ROUTE } from '../infrastructure/routes/index.js';
 
-const imageUrl = import.meta.env.VITE_TEMPLATE_IMAGE_URL || 'https://mui.com';
-
-const StyledBox = styled('div')(({ theme }) => ({
+const LogoBox = styled(Box)(({ theme }) => ({
     alignSelf: 'center',
-    width: '100%',
-    height: 400,
+    width: 160,
+    height: 160,
     marginTop: theme.spacing(8),
-    borderRadius: theme.shape.borderRadius,
-    outline: '6px solid hsla(220, 25%, 80%, 0.2)',
-    border: '1px solid',
-    borderColor: theme.palette.grey[200],
-    boxShadow: '0 0 12px 8px hsla(220, 25%, 80%, 0.2)',
-    backgroundImage: `url(${imageUrl}/static/screenshots/material-ui/getting-started/templates/dashboard.jpg)`,
-    backgroundSize: 'cover',
+    marginBottom: theme.spacing(2),
+    borderRadius: '50%',
+    background: theme.palette.mode === 'light'
+        ? alpha('#111', 0.04)
+        : alpha('#fff', 0.04),
+    border: `2px solid ${theme.palette.mode === 'light' ? '#111' : '#fff'}`,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontWeight: 900,
+    fontSize: 40,
+    color: theme.palette.mode === 'light' ? '#111' : '#fff',
+    letterSpacing: 2,
+    boxShadow: theme.palette.mode === 'light'
+        ? '0 0 12px 4px rgba(0,0,0,0.04)'
+        : '0 0 24px 8px rgba(255,255,255,0.04)',
     [theme.breakpoints.up('sm')]: {
-        marginTop: theme.spacing(10),
-        height: 700,
+        width: 220,
+        height: 220,
+        fontSize: 56,
     },
-    ...(theme.palette.mode === 'dark' && {
-        boxShadow: '0 0 24px 12px hsla(210, 100%, 25%, 0.2)',
-        backgroundImage: `url(${imageUrl}/static/screenshots/material-ui/getting-started/templates/dashboard-dark.jpg)`,
-        outlineColor: 'hsla(220, 20%, 42%, 0.1)',
-        borderColor: theme.palette.grey[700],
-    }),
 }));
 
 export default function Hero() {
+    const theme = useTheme();
+    const navigate = useNavigate();
+
     return (
         <Box
             id='hero'
-            sx={(theme) => ({
+            sx={{
                 width: '100%',
                 backgroundRepeat: 'no-repeat',
                 backgroundImage:
-                    'radial-gradient(ellipse 80% 50% at 50% -20%, hsl(210, 100%, 90%), transparent)',
-                ...(theme.palette.mode === 'dark' && {
-                    backgroundImage:
-                        'radial-gradient(ellipse 80% 50% at 50% -20%, hsl(210, 100%, 16%), transparent)',
-                }),
-            })}
+                    theme.palette.mode === 'light'
+                        ? 'radial-gradient(ellipse 80% 50% at 50% -20%, #f5f5f5, transparent)'
+                        : 'radial-gradient(ellipse 80% 50% at 50% -20%, #181818, transparent)',
+            }}
         >
             <Container
                 sx={{
@@ -75,19 +82,25 @@ export default function Hero() {
                             flexDirection: { xs: 'column', sm: 'row' },
                             alignItems: 'center',
                             fontSize: 'clamp(3rem, 10vw, 3.5rem)',
+                            color: theme.palette.mode === 'light'
+                                ? theme.palette.primary.main
+                                : theme.palette.primary.light,
+                            fontWeight: 700,
+                            letterSpacing: 1,
                         }}
                     >
                         Welcome&nbsp;to&nbsp;our&nbsp;
                         <Typography
                             component='span'
                             variant='h1'
-                            sx={(theme) => ({
+                            sx={{
                                 fontSize: 'inherit',
-                                color: 'primary.main',
-                                ...(theme.palette.mode === 'dark' && {
-                                    color: 'primary.light',
-                                }),
-                            })}
+                                color: theme.palette.mode === 'light'
+                                    ? '#000'
+                                    : '#fff',
+                                fontWeight: 900,
+                                letterSpacing: 2,
+                            }}
                         >
                             web-site
                         </Typography>
@@ -95,13 +108,13 @@ export default function Hero() {
                     <Typography
                         sx={{
                             textAlign: 'center',
-                            color: 'text.secondary',
+                            color: theme.palette.mode === 'light' ? '#222' : '#ccc',
                             width: { sm: '100%', md: '80%' },
+                            fontSize: { xs: 18, sm: 20 },
+                            fontWeight: 400,
                         }}
                     >
-                        Explore our cutting-edge dashboard, delivering
-                        high-quality solutions tailored to your needs. Elevate
-                        your experience with top-tier features and services.
+                        Explore our minimalistic carsharing and rental service. Fast, simple, and always in style.
                     </Typography>
                     <Stack
                         direction={{ xs: 'column', sm: 'row' }}
@@ -120,6 +133,19 @@ export default function Hero() {
                             aria-label='Enter your email address'
                             placeholder='Your email address'
                             fullWidth
+                            sx={{
+                                input: {
+                                    color: theme.palette.mode === 'light' ? '#111' : '#fff',
+                                    background: theme.palette.mode === 'light'
+                                        ? alpha('#000', 0.02)
+                                        : alpha('#fff', 0.02),
+                                },
+                                '& fieldset': {
+                                    borderColor: theme.palette.mode === 'light'
+                                        ? '#111'
+                                        : '#fff',
+                                },
+                            }}
                             slotProps={{
                                 htmlInput: {
                                     autoComplete: 'off',
@@ -129,26 +155,29 @@ export default function Hero() {
                         />
                         <Button
                             variant='contained'
-                            color='primary'
+                            color='inherit'
                             size='small'
-                            sx={{ minWidth: 'fit-content' }}
+                            sx={{
+                                minWidth: 'fit-content',
+                                background: theme.palette.mode === 'light' ? '#111' : '#fff',
+                                color: theme.palette.mode === 'light' ? '#fff' : '#111',
+                                fontWeight: 700,
+                                letterSpacing: 1,
+                                '&:hover': {
+                                    background: theme.palette.mode === 'light' ? '#222' : '#eee',
+                                    color: theme.palette.mode === 'light' ? '#fff' : '#111',
+                                }
+                            }}
+                            onClick={() => navigate(REGISTRATION_ROUTE)}
                         >
                             Start now
                         </Button>
                     </Stack>
-                    <Typography
-                        variant='caption'
-                        color='text.secondary'
-                        sx={{ textAlign: 'center' }}
-                    >
-                        By clicking &quot;Start now&quot; you agree to our&nbsp;
-                        <Link href='#' color='primary'>
-                            Terms & Conditions
-                        </Link>
-                        .
-                    </Typography>
                 </Stack>
-                <StyledBox id='image' />
+                <LogoBox>
+                    {/* Здесь может быть логотип приложения */}
+                    LOGO
+                </LogoBox>
             </Container>
         </Box>
     );

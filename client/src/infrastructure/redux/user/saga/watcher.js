@@ -3,7 +3,8 @@ import {
     registerRequest,
     loginRequest,
     fetchProfileRequest,
-    logout, checkAuthRequest,
+    logoutRequest,
+    checkAuthRequest,
 } from '../slice';
 import {
     handleRegister,
@@ -26,11 +27,11 @@ function* watchFetchProfile() {
 }
 
 function* watchLogout() {
-    yield takeEvery(logout.type, handleLogout);
+    yield takeEvery(logoutRequest.type, handleLogout);
 }
 
 function* watchCheckAuth() {
-    yield takeLatest(checkAuthRequest.type, handleCheckAuth)
+    yield takeLatest(checkAuthRequest.type, handleCheckAuth);
 }
 
 export default function* userWatcher() {

@@ -14,7 +14,7 @@ function Copyright() {
         <Typography variant='body2' sx={{ color: 'text.secondary', mt: 1 }}>
             {'Copyright © '}
             <Link color='text.secondary' href='https://mui.com/'>
-                Sitemark
+                Carsharing+ App
             </Link>
             &nbsp;
             {new Date().getFullYear()}
@@ -45,17 +45,6 @@ export default function Footer() {
                 }}
             >
                 <div>
-                    <Link color='text.secondary' variant='body2' href='#'>
-                        Privacy Policy
-                    </Link>
-                    <Typography
-                        sx={{ display: 'inline', mx: 0.5, opacity: 0.5 }}
-                    >
-                        &nbsp;•&nbsp;
-                    </Typography>
-                    <Link color='text.secondary' variant='body2' href='#'>
-                        Terms of Service
-                    </Link>
                     <Copyright />
                 </div>
                 <Stack
@@ -76,7 +65,7 @@ export default function Footer() {
                     <IconButton
                         color='inherit'
                         size='small'
-                        href='https://x.com/Nura    '
+                        href='https://x.com/Nura'
                         aria-label='X'
                         sx={{ alignSelf: 'center' }}
                     >

@@ -39,7 +39,7 @@ export default function TaxiAdminPage() {
     return (
         <Container maxWidth="lg" sx={{ py: 4 }}>
             <Typography variant="h4" gutterBottom>
-                Управление заявками на поездки
+                Ride Requests Management
             </Typography>
             {loading && (
                 <Box display="flex" justifyContent="center" py={4}>
@@ -57,22 +57,24 @@ export default function TaxiAdminPage() {
                         <Card variant="outlined">
                             <CardContent>
                                 <Typography variant="h6" gutterBottom>
-                                    {ride.carModel || 'Без модели'}
+                                    {ride.carModel
+                                        ? ride.carModel
+                                        : (ride.creator?.username || `User #${ride.userId}`)}
                                 </Typography>
                                 <Typography variant="body2">
-                                    <strong>Откуда:</strong> {ride.fromLocation}
+                                    <strong>From:</strong> {ride.fromLocation}
                                 </Typography>
                                 <Typography variant="body2">
-                                    <strong>Куда:</strong> {ride.toLocation}
+                                    <strong>To:</strong> {ride.toLocation}
                                 </Typography>
                                 <Typography variant="body2">
-                                    <strong>Время:</strong> {new Date(ride.startTime).toLocaleString()}
+                                    <strong>Time:</strong> {new Date(ride.startTime).toLocaleString()}
                                 </Typography>
                                 <Typography variant="body2">
-                                    <strong>Цена:</strong> {ride.price ? `${Number(ride.price).toFixed(2)}₸` : '—'}
+                                    <strong>Price:</strong> {ride.price ? `${Number(ride.price).toFixed(2)}₸` : '—'}
                                 </Typography>
                                 <Typography variant="body2">
-                                    <strong>Статус:</strong>{' '}
+                                    <strong>Status:</strong>{' '}
                                     <Chip
                                         label={ride.status}
                                         color={statusColors[ride.status] || 'default'}
@@ -80,7 +82,7 @@ export default function TaxiAdminPage() {
                                     />
                                 </Typography>
                                 <Typography variant="body2" sx={{ mt: 1 }}>
-                                    <strong>Создатель:</strong> {ride.user?.username || ride.userId}
+                                    <strong>Creator ID:</strong> {ride.userId}
                                 </Typography>
                             </CardContent>
                             <CardActions>
@@ -93,7 +95,7 @@ export default function TaxiAdminPage() {
                                             disabled={statusLoading}
                                             onClick={() => handleStatusChange(ride.id, 'APPROVED')}
                                         >
-                                            Одобрить
+                                            Approve
                                         </Button>
                                         <Button
                                             variant="contained"
@@ -102,7 +104,7 @@ export default function TaxiAdminPage() {
                                             disabled={statusLoading}
                                             onClick={() => handleStatusChange(ride.id, 'REJECTED')}
                                         >
-                                            Отклонить
+                                            Reject
                                         </Button>
                                     </>
                                 )}

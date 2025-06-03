@@ -2,6 +2,8 @@ const path = require('path');
 const uuid = require('uuid');
 const { Car, CarInfo, Brand } = require('../models/models');
 const ApiError = require('../error/ApiError');
+const { Op } = require('sequelize');
+
 
 class CarController {
     // POST /api/cars
@@ -69,7 +71,9 @@ class CarController {
             if (rentalType) filter.rentalType = rentalType;
             if (brandId) filter.brandId = brandId;
             if (year) filter.year = year;
-            if (model) filter.model = model;
+            if (model) {
+                filter.model = { [Op.iLike]: `%${model}%` }; // <-- вот здесь частичное совпадение
+            }
             if (available !== undefined) filter.available = available === 'true';
 
             const offset = (page - 1) * limit;

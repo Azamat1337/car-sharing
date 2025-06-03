@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Box, Typography } from '@mui/material';
-import { styled } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import { useNavigate } from "react-router";
 import { RENTAL_CAR_ROUTE } from "../infrastructure/routes/index.js";
 import { useDispatch, useSelector } from 'react-redux';
@@ -15,16 +15,50 @@ import { getBrandsDataSelector, getBrandsRequest } from '../infrastructure/redux
 import CarListFilter from '../components/CarList/CarListFilter.jsx';
 import CarListGrid from '../components/CarList/CarListGrid.jsx';
 
+const StyledContainer = styled(Container)(({ theme }) => ({
+    paddingTop: theme.spacing(4),
+    paddingBottom: theme.spacing(8),
+    minHeight: '100vh',
+    backgroundColor: theme.palette.background.default
+}));
+
+const MainBox = styled(Box)(({ theme }) => ({
+    display: 'flex',
+    gap: theme.spacing(4),
+    [theme.breakpoints.down('md')]: {
+        flexDirection: 'column'
+    }
+}));
+
 const FilterContainer = styled(Box)(({ theme }) => ({
-    padding: theme.spacing(2),
-    borderRight: `1px solid ${theme.palette.divider}`,
+    width: 280,
+    flexShrink: 0,
+    padding: theme.spacing(3),
     borderRadius: theme.shape.borderRadius,
     backgroundColor: theme.palette.background.paper,
+    boxShadow: theme.palette.mode === 'light'
+        ? '0 1px 3px rgba(0,0,0,0.12)'
+        : '0 1px 3px rgba(255,255,255,0.05)',
+    [theme.breakpoints.down('md')]: {
+        width: '100%'
+    }
+}));
+
+const ContentBox = styled(Box)(({ theme }) => ({
+    flexGrow: 1,
+    minWidth: 0,
+    padding: theme.spacing(3),
+    borderRadius: theme.shape.borderRadius,
+    backgroundColor: theme.palette.background.paper,
+    boxShadow: theme.palette.mode === 'light'
+        ? '0 1px 3px rgba(0,0,0,0.12)'
+        : '0 1px 3px rgba(255,255,255,0.05)'
 }));
 
 export default function RentalList() {
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const theme = useTheme();
     const [selectedBrand, setSelectedBrand] = useState('');
     const [search, setSearch] = useState('');
     const [yearFrom, setYearFrom] = useState('');
@@ -46,13 +80,11 @@ export default function RentalList() {
         navigate(path);
     };
 
-    // Фильтрация по году
     const filteredCars = cars.filter(car =>
         (!yearFrom || car.year >= Number(yearFrom)) &&
         (!yearTo || car.year <= Number(yearTo))
     );
 
-    // Обработчики для фильтра
     const handleBrandChange = (brandId) => {
         setSelectedBrand(brandId);
         dispatch(getAllCarsRequest({ brandId, rentalType: ['DAILY', 'BOTH'] }));
@@ -67,13 +99,29 @@ export default function RentalList() {
     const handleYearToChange = (value) => setYearTo(value);
 
     return (
-        <Container maxWidth="lg" sx={{ py: 4, backgroundColor: 'white' }}>
-            <Typography variant="h4" gutterBottom color="primary" sx={{ textAlign: 'center' }}>
-                Car Rental Inventory
+        <StyledContainer maxWidth="lg">
+            <Typography
+                variant="h4"
+                gutterBottom
+                sx={{
+                    textAlign: 'center',
+                    color: theme.palette.mode === 'light' ? '#000' : '#fff',
+                    letterSpacing: '0.1em',
+                    fontWeight: 500,
+                    mb: 6,
+                    '& span': {
+                        color: theme.palette.mode === 'light'
+                            ? 'rgba(0,0,0,0.6)'
+                            : 'rgba(255,255,255,0.6)',
+                        fontWeight: 400
+                    }
+                }}
+            >
+                Аренда <span>(Посуточно)</span>
             </Typography>
 
-            <Box sx={{ display: 'flex', gap: 4 }}>
-                <FilterContainer sx={{ width: 240 }}>
+            <MainBox>
+                <FilterContainer>
                     <CarListFilter
                         brands={brands}
                         selectedBrand={selectedBrand}
@@ -86,15 +134,17 @@ export default function RentalList() {
                         onYearToChange={handleYearToChange}
                     />
                 </FilterContainer>
-                <Box sx={{ flexGrow: 1 }}>
+                <ContentBox>
                     <CarListGrid
                         cars={filteredCars}
                         loading={loading}
                         error={error}
                         onCarClick={goToCar}
                     />
-                </Box>
-            </Box>
-        </Container>
+                </ContentBox>
+            </MainBox>
+        </StyledContainer>
     );
 }
+
+

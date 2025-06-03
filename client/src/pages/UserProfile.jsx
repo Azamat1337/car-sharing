@@ -50,7 +50,10 @@ export default function UserProfile({ setDarkMode, darkMode }) {
     const chatLoading = useSelector(chatLoadingSelector);
     const chatError = useSelector(chatErrorSelector);
 
+    const [contactAdminClicked, setContactAdminClicked] = useState(false);
+
     const handleContactAdmin = () => {
+        setContactAdminClicked(true);
         dispatch(getOrCreateChatRequest({ subject: 'Support' }));
     };
 
@@ -64,10 +67,11 @@ export default function UserProfile({ setDarkMode, darkMode }) {
     }, [tab, dispatch]);
 
     useEffect(() => {
-        if (chat && chat.id) {
+        if (contactAdminClicked && chat && chat.id) {
             navigate(`/chat/${chat.id}`);
+            setContactAdminClicked(false);
         }
-    }, [chat, navigate]);
+    }, [chat, navigate, contactAdminClicked]);
 
     const handleChange = (_, newVal) => setTab(newVal);
 

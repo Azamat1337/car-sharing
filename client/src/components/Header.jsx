@@ -5,7 +5,7 @@ import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { ADMIN_ROUTE, USER_ROUTE } from '../infrastructure/routes/index.js';
-import { logout } from '../infrastructure/redux/user/slice.js';
+import { logoutRequest } from '../infrastructure/redux/user/slice.js';
 
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
     backgroundColor: theme.palette.background.paper,
@@ -23,9 +23,7 @@ export default function Header() {
     const { username, email, role } = user || {};
 
     const handleLogout = () => {
-        dispatch(logout());
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
+        dispatch(logoutRequest());
         navigate('/login');
     };
 

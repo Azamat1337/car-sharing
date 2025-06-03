@@ -1,4 +1,4 @@
-import {createSlice} from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
     token: null,
@@ -8,7 +8,7 @@ const initialState = {
     isAuth: false,
 };
 
-export const USER = 'user'
+export const USER = 'user';
 
 const userSlice = createSlice({
     name: USER,
@@ -69,17 +69,21 @@ const userSlice = createSlice({
             state.token = null;
             state.profile = null;
         },
+        logoutRequest(state) {
+            state.loading = true;
+        },
         logout(state) {
             Object.assign(state, initialState);
+            state.loading = false;
         }
     }
-})
+});
 
 export const {
     registerRequest, registerSuccess, registerFailure,
     loginRequest, loginSuccess, loginFailure,
     fetchProfileRequest, fetchProfileSuccess, fetchProfileFailure,
     checkAuthFailure, checkAuthRequest, checkAuthSuccess,
-    logout
+    logout, logoutRequest
 } = userSlice.actions;
 export default userSlice.reducer;

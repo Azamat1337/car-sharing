@@ -1,4 +1,4 @@
-import {call, put} from 'redux-saga/effects';
+import { call, put } from 'redux-saga/effects';
 import {
     registerSuccess,
     registerFailure,
@@ -7,9 +7,9 @@ import {
     fetchProfileRequest,
     fetchProfileSuccess,
     fetchProfileFailure,
-    logout, checkAuthFailure, checkAuthSuccess,
+    logout, logoutRequest, checkAuthFailure, checkAuthSuccess,
 } from '../slice.js';
-import {userService} from "../../../services/user/userService.js";
+import { userService } from "../../../services/user/userService.js";
 
 export function* handleRegister(action) {
     try {
@@ -33,7 +33,7 @@ export function* handleLogin(action) {
 
         const { accessToken, refreshToken } = response;
 
-        localStorage.setItem('accessToken',  accessToken);
+        localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
         yield put(loginSuccess(accessToken));
 
@@ -43,7 +43,6 @@ export function* handleLogin(action) {
         yield put(loginFailure(msg));
     }
 }
-
 
 export function* handleFetchProfile() {
     try {

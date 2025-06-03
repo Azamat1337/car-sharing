@@ -11,7 +11,7 @@ import {
     Paper,
     Alert
 } from '@mui/material';
-import { styled } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { getChatMessagesRequest, chatMessagesDataSelector, chatMessagesLoadingSelector, chatMessagesErrorSelector } from '../infrastructure/redux/chat/getChatMessages/slice';
@@ -25,10 +25,15 @@ import {
 
 const ChatContainer = styled(Container)(({ theme }) => ({
     padding: theme.spacing(4),
-    backgroundColor: '#fafafa',
+    backgroundColor: theme.palette.mode === 'dark' ? '#181818' : '#fafafa',
+    color: theme.palette.mode === 'dark' ? '#fff' : '#000',
     display: 'flex',
     flexDirection: 'column',
     height: '100vh',
+    '&.MuiContainer-root': {
+        backgroundColor: theme.palette.mode === 'dark' ? '#181818' : '#fafafa',
+        color: theme.palette.mode === 'dark' ? '#fff' : '#000',
+    }
 }));
 
 const MessagesBox = styled(Paper)(({ theme }) => ({
@@ -36,6 +41,8 @@ const MessagesBox = styled(Paper)(({ theme }) => ({
     overflowY: 'auto',
     padding: theme.spacing(2),
     marginBottom: theme.spacing(2),
+    backgroundColor: theme.palette.mode === 'dark' ? '#222' : '#fff',
+    color: theme.palette.mode === 'dark' ? '#fff' : '#000',
 }));
 
 const InputBox = styled(Box)(({ theme }) => ({
@@ -58,7 +65,6 @@ export default function ChatPage() {
     const [text, setText] = useState('');
     const messagesEndRef = useRef(null);
 
-    // Для статуса чата (можно получать из messages[0]?.conversation?.status или отдельным запросом)
     const [chatStatus, setChatStatus] = useState('ACTIVE');
 
     useEffect(() => {
@@ -68,13 +74,10 @@ export default function ChatPage() {
     useEffect(() => {
         if (chatId) {
             dispatch(getChatMessagesRequest(chatId));
-            // Получить статус чата (если приходит с сообщениями)
-            // Можно заменить на отдельный селектор, если есть
         }
     }, [dispatch, chatId]);
 
     useEffect(() => {
-        // Если сообщения содержат статус чата
         if (messages.length > 0 && messages[0].conversation?.status) {
             setChatStatus(messages[0].conversation.status);
         }
@@ -130,8 +133,12 @@ export default function ChatPage() {
                         >
                             <Box
                                 sx={{
-                                    bgcolor: msg.senderId === profile.id ? 'primary.main' : 'grey.300',
-                                    color: msg.senderId === profile.id ? '#fff' : '#000',
+                                    bgcolor: msg.senderId === profile.id
+                                        ? (theme) => theme.palette.mode === 'dark' ? 'primary.dark' : 'primary.main'
+                                        : (theme) => theme.palette.mode === 'dark' ? '#333' : 'grey.300',
+                                    color: msg.senderId === profile.id
+                                        ? '#fff'
+                                        : (theme) => theme.palette.mode === 'dark' ? '#fff' : '#000',
                                     borderRadius: 1,
                                     p: 1.5,
                                     maxWidth: '70%',
@@ -159,6 +166,10 @@ export default function ChatPage() {
                     onChange={e => setText(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter') handleSend(); }}
                     disabled={chatStatus === 'CLOSED'}
+                    sx={{
+                        backgroundColor: (theme) => theme.palette.mode === 'dark' ? '#222' : '#fff',
+                        color: (theme) => theme.palette.mode === 'dark' ? '#fff' : '#000',
+                    }}
                 />
                 <Button
                     variant="contained"

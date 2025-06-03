@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Typography, Grid } from '@mui/material';
-import { styled } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import { useParams } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { carService } from '../infrastructure/services/cars/carService';
 
-// Redux selectors & actions
 import {
     getCarInfoRequest,
     carInfoLoadingSelector,
@@ -41,7 +40,6 @@ import {
     updateCarInfoSuccessSelector
 } from '../infrastructure/redux/carInfo/update/slice';
 
-// Готовые компоненты
 import CarImageBlock from '../components/Car/CarImageBlock.jsx';
 import CarMainInfo from '../components/Car/CarMainInfo.jsx';
 import CarBookingForm from '../components/Car/CarBookingForm.jsx';
@@ -50,10 +48,14 @@ import CarInfoTable from '../components/Car/CarInfoTable.jsx';
 import CarInfoDialog from '../components/Car/CarInfoDialog.jsx';
 
 const CarPageContainer = styled(Container)(({ theme }) => ({
-    backgroundColor: '#fff',
-    color: '#000',
+    backgroundColor: theme.palette.mode === 'dark' ? '#181818' : '#fff',
+    color: theme.palette.mode === 'dark' ? '#fff' : '#000',
     padding: theme.spacing(4),
-    minHeight: '100vh'
+    minHeight: '100vh',
+    '&.MuiContainer-root': {
+        backgroundColor: theme.palette.mode === 'dark' ? '#181818' : '#fff',
+        color: theme.palette.mode === 'dark' ? '#fff' : '#000',
+    }
 }));
 
 export default function CarPage() {
@@ -65,14 +67,12 @@ export default function CarPage() {
     const [endDate, setEndDate] = useState('');
     const [showBookingModal, setShowBookingModal] = useState(false);
 
-    // Для модалок характеристик
     const [openAdd, setOpenAdd] = useState(false);
     const [openEdit, setOpenEdit] = useState(false);
     const [editInfo, setEditInfo] = useState(null);
     const [attributeName, setAttributeName] = useState('');
     const [attributeValue, setAttributeValue] = useState('');
 
-    // Redux selectors
     const loadingInfo = useSelector(carInfoLoadingSelector);
     const errorInfo = useSelector(carInfoErrorSelector);
     const carInfo = useSelector(carInfoDataSelector);
@@ -81,22 +81,18 @@ export default function CarPage() {
     const bookingError = useSelector(createBookingErrorSelector);
     const bookingSuccess = useSelector(createBookingSuccessSelector);
 
-    // carInfo create
     const createLoading = useSelector(createCarInfoLoadingSelector);
     const createError = useSelector(createCarInfoErrorSelector);
     const createSuccess = useSelector(createCarInfoSuccessSelector);
 
-    // carInfo delete
     const deleteLoading = useSelector(deleteCarInfoLoadingSelector);
     const deleteError = useSelector(deleteCarInfoErrorSelector);
     const deleteSuccess = useSelector(deleteCarInfoSuccessSelector);
 
-    // carInfo update
     const updateLoading = useSelector(updateCarInfoLoadingSelector);
     const updateError = useSelector(updateCarInfoErrorSelector);
     const updateSuccess = useSelector(updateCarInfoSuccessSelector);
 
-    // Получаем профиль пользователя для проверки роли
     const profile = useSelector(state => state.user.profile);
     const isAdmin = profile?.role === 'ADMIN';
 
@@ -113,7 +109,6 @@ export default function CarPage() {
         dispatch(getCarInfoRequest(id));
     }, [id, dispatch]);
 
-    // После успешного добавления/удаления/апдейта обновляем список характеристик
     useEffect(() => {
         if (createSuccess || deleteSuccess || updateSuccess) {
             dispatch(getCarInfoRequest(id));
@@ -147,7 +142,6 @@ export default function CarPage() {
         }
     }, [bookingSuccess, dispatch]);
 
-    // --- carInfo handlers ---
     const handleOpenAdd = () => {
         setAttributeName('');
         setAttributeValue('');
@@ -186,7 +180,6 @@ export default function CarPage() {
         }));
     };
 
-    // --- booking handlers ---
     const handleOpenBookingModal = (e) => {
         e.preventDefault();
         if (!startDate || !endDate) return;
@@ -250,7 +243,6 @@ export default function CarPage() {
                 </Grid>
             </Grid>
 
-            {/* Модалка подтверждения бронирования */}
             <BookingConfirmDialog
                 open={showBookingModal}
                 onClose={() => setShowBookingModal(false)}
@@ -262,7 +254,6 @@ export default function CarPage() {
                 error={bookingError}
             />
 
-            {/* Модалка для добавления характеристики */}
             <CarInfoDialog
                 open={openAdd}
                 onClose={() => setOpenAdd(false)}
@@ -276,7 +267,6 @@ export default function CarPage() {
                 isEdit={false}
             />
 
-            {/* Модалка для редактирования характеристики */}
             <CarInfoDialog
                 open={openEdit}
                 onClose={() => setOpenEdit(false)}

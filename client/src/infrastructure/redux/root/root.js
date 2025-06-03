@@ -29,6 +29,9 @@ import updateCarInfoReducer from '../carInfo/update/slice.js';
 import deleteCarInfoReducer from '../carInfo/delete/slice.js';
 import updateBookingReducer from '../booking/update/slice.js';
 import updateBrandReducer from '../brand/update/slice.js';
+import updatePostReducer from '../post/update/slice.js';
+import deletePostReducer from '../post/delete/slice.js';
+import leaveRideReducer from '../taxi/leave/slice.js';
 
 import { GET_BRANDS } from "../brand/get/slice.js";
 import { ADD_BRAND } from "../brand/add/slice.js";
@@ -60,6 +63,9 @@ import { UPDATE_CAR_INFO } from "../carInfo/update/slice.js";
 import { DELETE_CAR_INFO } from "../carInfo/delete/slice.js";
 import { UPDATE_BOOKING } from "../booking/update/slice.js";
 import { UPDATE_BRAND } from "../brand/update/slice.js";
+import { UPDATE_POST } from "../post/update/slice.js";
+import { DELETE_POST } from "../post/delete/slice.js";
+import { LEAVE_RIDE } from "../taxi/leave/slice.js";
 
 const rootReducer = combineReducers({
     [FETCH_NEWS]: newsReducer,
@@ -92,6 +98,9 @@ const rootReducer = combineReducers({
     [DELETE_CAR_INFO]: deleteCarInfoReducer,
     [UPDATE_BOOKING]: updateBookingReducer,
     [UPDATE_BRAND]: updateBrandReducer,
+    [UPDATE_POST]: updatePostReducer,
+    [DELETE_POST]: deletePostReducer,
+    [LEAVE_RIDE]: leaveRideReducer,
 })
 
 export default rootReducer;

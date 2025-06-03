@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, TextField, Typography, List, ListItem, ListItemText } from '@mui/material';
+import { Box, TextField, Typography, List, ListItem, ListItemText, Button } from '@mui/material';
 
 export default function CarListFilter({
     brands,
@@ -14,9 +14,29 @@ export default function CarListFilter({
 }) {
     return (
         <Box sx={{ width: 240, mr: 2 }}>
-            <Typography variant="h6" gutterBottom>
-                Фильтр по бренду
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                <Typography variant="h6" gutterBottom>
+                    Brand Filter
+                </Typography>
+                {selectedBrand && (
+                    <Button
+                        size="small"
+                        color="secondary"
+                        variant="outlined"
+                        onClick={() => onBrandChange(null)}
+                        sx={{
+                            ml: 1,
+                            minWidth: 0,
+                            px: 1.5,
+                            fontSize: 12,
+                            borderColor: 'grey.400',
+                            color: 'grey.700',
+                        }}
+                    >
+                        Clear
+                    </Button>
+                )}
+            </Box>
             <List>
                 {brands.map((brand) => (
                     <ListItem
@@ -24,13 +44,39 @@ export default function CarListFilter({
                         key={brand.id}
                         selected={selectedBrand === brand.id}
                         onClick={() => onBrandChange(brand.id)}
+                        sx={{
+                            cursor: 'pointer',
+                            borderRadius: 1,
+                            mb: 0.5,
+                            backgroundColor: selectedBrand === brand.id
+                                ? (theme) => theme.palette.mode === 'light' ? '#111' : '#fff'
+                                : 'transparent',
+                            color: selectedBrand === brand.id
+                                ? (theme) => theme.palette.mode === 'light' ? '#fff' : '#111'
+                                : 'inherit',
+                            fontWeight: selectedBrand === brand.id ? 700 : 400,
+                            '&:hover': {
+                                backgroundColor: (theme) =>
+                                    selectedBrand === brand.id
+                                        ? (theme.palette.mode === 'light' ? '#111' : '#fff')
+                                        : (theme.palette.mode === 'light' ? '#f5f5f5' : '#222'),
+                            },
+                        }}
                     >
-                        <ListItemText primary={brand.name} />
+                        <ListItemText
+                            primary={brand.name}
+                            primaryTypographyProps={{
+                                fontWeight: selectedBrand === brand.id ? 700 : 400,
+                                color: selectedBrand === brand.id
+                                    ? (theme) => theme.palette.mode === 'light' ? '#fff' : '#111'
+                                    : 'inherit',
+                            }}
+                        />
                     </ListItem>
                 ))}
             </List>
             <TextField
-                label="Поиск по модели"
+                label="Model search"
                 variant="outlined"
                 size="small"
                 fullWidth
@@ -39,7 +85,7 @@ export default function CarListFilter({
                 onChange={e => onSearchChange(e.target.value)}
             />
             <TextField
-                label="Год от"
+                label="Year from"
                 variant="outlined"
                 size="small"
                 type="number"
@@ -50,7 +96,7 @@ export default function CarListFilter({
                 fullWidth
             />
             <TextField
-                label="Год до"
+                label="Year to"
                 variant="outlined"
                 size="small"
                 type="number"

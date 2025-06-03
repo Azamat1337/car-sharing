@@ -1,53 +1,107 @@
 import * as React from 'react';
 import { useForm } from 'react-hook-form';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
-import CssBaseline from '@mui/material/CssBaseline';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import FormLabel from '@mui/material/FormLabel';
-import FormControl from '@mui/material/FormControl';
-import Link from '@mui/material/Link';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
-import Stack from '@mui/material/Stack';
-import Card from '@mui/material/Card';
+import {
+    Box,
+    Button,
+    Checkbox,
+    CssBaseline,
+    FormControlLabel,
+    FormLabel,
+    FormControl,
+    Link,
+    TextField,
+    Typography,
+    Stack,
+    Card,
+    useTheme,
+    Divider,
+} from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { RENTAL_LIST_ROUTE } from '../infrastructure/routes/index.js';
 import { useDispatch, useSelector } from "react-redux";
 import { loginRequest } from "../infrastructure/redux/user/slice.js";
-import ForgotPassword from '../components/ForgotPassword.jsx';
+
+const SignInContainer = styled(Stack)(({ theme }) => ({
+    minHeight: '100vh',
+    Width: '100vw',
+    backgroundColor: theme.palette.background.default,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: theme.spacing(2),
+    [theme.breakpoints.up('sm')]: { padding: theme.spacing(4) },
+}));
 
 const StyledCard = styled(Card)(({ theme }) => ({
     display: 'flex',
     flexDirection: 'column',
-    alignSelf: 'center',
+    alignItems: 'center',
     width: '100%',
-    padding: theme.spacing(4),
+    maxWidth: 420,
+    padding: theme.spacing(5, 4),
+    borderRadius: theme.shape.borderRadius * 2,
+    boxShadow: theme.palette.mode === 'dark'
+        ? '0 2px 16px 0 rgba(0,0,0,0.45)'
+        : '0 2px 16px 0 rgba(30,30,30,0.10)',
+    background:
+        theme.palette.mode === 'dark'
+            ? theme.palette.grey[900]
+            : theme.palette.common.white,
+    border: `1.5px solid ${theme.palette.mode === 'dark'
+        ? theme.palette.grey[800]
+        : theme.palette.grey[200]
+        }`,
     gap: theme.spacing(2),
-    margin: 'auto',
-    [theme.breakpoints.up('sm')]: {
-        maxWidth: '450px',
-    },
-    boxShadow:
-        'hsla(220, 30%, 5%, 0.05) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.05) 0px 15px 35px -5px',
 }));
 
-const SignInContainer = styled(Stack)(({ theme }) => ({
-    height: '100vh',
-    width: '100vw',
-    padding: theme.spacing(2),
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    [theme.breakpoints.up('sm')]: {
-        padding: theme.spacing(4),
+const StyledTextField = styled(TextField)(({ theme }) => ({
+    '& .MuiInputBase-root': {
+        backgroundColor: theme.palette.mode === 'dark'
+            ? theme.palette.grey[800]
+            : theme.palette.grey[50],
+        borderRadius: theme.shape.borderRadius * 1.5,
+        color: theme.palette.text.primary,
+        fontSize: 16,
+    },
+    '& .MuiOutlinedInput-notchedOutline': {
+        borderColor: theme.palette.grey[theme.palette.mode === 'dark' ? 700 : 300],
+    },
+    '&:hover .MuiOutlinedInput-notchedOutline': {
+        borderColor: theme.palette.grey[theme.palette.mode === 'dark' ? 500 : 800],
+    },
+    '& .MuiInputBase-input': {
+        color: theme.palette.text.primary,
+    },
+}));
+
+const StyledButton = styled(Button)(({ theme }) => ({
+    backgroundColor: theme.palette.mode === 'dark'
+        ? theme.palette.common.white
+        : theme.palette.common.black,
+    color: theme.palette.mode === 'dark'
+        ? theme.palette.common.black
+        : theme.palette.common.white,
+    borderRadius: theme.shape.borderRadius * 1.5,
+    textTransform: 'none',
+    fontWeight: 600,
+    fontSize: 16,
+    letterSpacing: 1,
+    height: 48,
+    boxShadow: 'none',
+    transition: 'background 0.2s',
+    '&:hover': {
+        backgroundColor: theme.palette.mode === 'dark'
+            ? theme.palette.grey[300]
+            : theme.palette.grey[900],
+        color: theme.palette.mode === 'dark'
+            ? theme.palette.common.black
+            : theme.palette.common.white,
     },
 }));
 
 export default function SignIn() {
+    const theme = useTheme();
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const { token, loading, error } = useSelector(state => state.user);
@@ -57,8 +111,6 @@ export default function SignIn() {
         handleSubmit,
         formState: { errors }
     } = useForm();
-
-    const [open, setOpen] = React.useState(false);
 
     useEffect(() => {
         if (token) {
@@ -70,24 +122,34 @@ export default function SignIn() {
         dispatch(loginRequest(data));
     };
 
-    const handleClickOpen = () => setOpen(true);
-    const handleClose = () => setOpen(false);
-
     return (
         <>
             <CssBaseline />
-            <SignInContainer direction='column'>
+            <SignInContainer>
                 <StyledCard variant='outlined'>
                     <Typography
                         component='h1'
                         variant='h4'
                         sx={{
-                            width: '100%',
-                            fontSize: 'clamp(2rem, 10vw, 2.15rem)',
+                            fontWeight: 700,
+                            letterSpacing: 1.5,
+                            mb: 1,
+                            color: theme.palette.text.primary,
                         }}
                     >
                         Sign in
                     </Typography>
+                    <Typography
+                        variant="subtitle2"
+                        sx={{
+                            color: theme.palette.text.secondary,
+                            mb: 3,
+                            textAlign: 'center',
+                        }}
+                    >
+                        Welcome back! Please enter your credentials.
+                    </Typography>
+
                     <Box
                         component='form'
                         onSubmit={handleSubmit(onSubmit)}
@@ -95,13 +157,18 @@ export default function SignIn() {
                         sx={{
                             display: 'flex',
                             flexDirection: 'column',
-                            width: '100%',
                             gap: 2,
+                            width: '100%',
                         }}
                     >
                         <FormControl>
-                            <FormLabel htmlFor='email'>Email</FormLabel>
-                            <TextField
+                            <FormLabel
+                                htmlFor='email'
+                                sx={{ color: theme.palette.text.secondary, fontWeight: 500, mb: 0.5 }}
+                            >
+                                Email
+                            </FormLabel>
+                            <StyledTextField
                                 id='email'
                                 type='email'
                                 placeholder='your@email.com'
@@ -109,7 +176,6 @@ export default function SignIn() {
                                 autoFocus
                                 required
                                 fullWidth
-                                variant='outlined'
                                 error={!!errors.email}
                                 helperText={errors.email?.message}
                                 {...register('email', {
@@ -123,15 +189,19 @@ export default function SignIn() {
                         </FormControl>
 
                         <FormControl>
-                            <FormLabel htmlFor='password'>Password</FormLabel>
-                            <TextField
+                            <FormLabel
+                                htmlFor='password'
+                                sx={{ color: theme.palette.text.secondary, fontWeight: 500, mb: 0.5 }}
+                            >
+                                Password
+                            </FormLabel>
+                            <StyledTextField
                                 placeholder='••••••'
                                 type='password'
                                 id='password'
                                 autoComplete='current-password'
                                 required
                                 fullWidth
-                                variant='outlined'
                                 error={!!errors.password}
                                 helperText={errors.password?.message}
                                 {...register('password', {
@@ -145,8 +215,16 @@ export default function SignIn() {
                         </FormControl>
 
                         <FormControlLabel
-                            control={<Checkbox value='remember' color='primary' />}
-                            label='Remember me'
+                            control={<Checkbox color="default" sx={{
+                                color: theme.palette.grey[theme.palette.mode === 'dark' ? 300 : 800],
+                                '&.Mui-checked': {
+                                    color: theme.palette.mode === 'dark'
+                                        ? theme.palette.common.white
+                                        : theme.palette.common.black,
+                                },
+                            }} />}
+                            label="Remember me"
+                            sx={{ color: theme.palette.text.secondary }}
                         />
 
                         {error && (
@@ -155,30 +233,35 @@ export default function SignIn() {
                             </Typography>
                         )}
 
-                        <Button
+                        <StyledButton
                             type='submit'
                             fullWidth
                             variant='contained'
                             disabled={loading}
                         >
                             {loading ? 'Signing in...' : 'Sign in'}
-                        </Button>
-
-                        <ForgotPassword open={open} handleClose={handleClose} />
-                        <Link
-                            component='button'
-                            type='button'
-                            onClick={handleClickOpen}
-                            variant='body2'
-                            sx={{ alignSelf: 'center' }}
-                        >
-                            Forgot your password?
-                        </Link>
+                        </StyledButton>
                     </Box>
 
-                    <Typography sx={{ textAlign: 'center' }}>
+                    <Divider sx={{
+                        width: '100%',
+                        my: 2,
+                        borderColor: theme.palette.grey[theme.palette.mode === 'dark' ? 800 : 200],
+                    }} />
+
+                    <Typography sx={{ textAlign: 'center', color: theme.palette.text.secondary }}>
                         Don&apos;t have an account?{' '}
-                        <Link href='/registration' variant='body2'>
+                        <Link
+                            href='/registration'
+                            variant='body2'
+                            sx={{
+                                color: theme.palette.mode === 'dark'
+                                    ? theme.palette.common.white
+                                    : theme.palette.common.black,
+                                fontWeight: 600,
+                                ml: 0.5,
+                            }}
+                        >
                             Sign up
                         </Link>
                     </Typography>

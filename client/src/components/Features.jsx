@@ -6,40 +6,41 @@ import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
-import { styled } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
 
+import LocalTaxiIcon from '@mui/icons-material/LocalTaxi';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
-import GpsFixedIcon from '@mui/icons-material/GpsFixed';
-import PaymentIcon from '@mui/icons-material/Payment';
+import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 
 const items = [
     {
+        icon: <LocalTaxiIcon fontSize='large' />,
+        title: 'TAXI SERVICE',
+        description:
+            'Fast and convenient taxi — get a ride in a few clicks, anytime. Transparent fares and professional drivers.',
+        imageLight: `url("https://example.com/images/taxi-light.jpg")`,
+        imageDark: `url("https://example.com/images/taxi-dark.jpg")`,
+    },
+    {
         icon: <DirectionsCarIcon fontSize='large' />,
-        title: 'Wide Vehicle Selection',
+        title: 'CARSHARING',
         description:
-            'Choose from a diverse fleet of cars to suit every need – from compact city cars to luxury SUVs.',
-        imageLight: `url("https://example.com/images/cars-light.jpg")`,
-        imageDark: `url("https://example.com/images/cars-dark.jpg")`,
+            'City carsharing — rent a car by the minute or hour. Perfect for business meetings, errands, or spontaneous trips.',
+        imageLight: `url("https://example.com/images/carsharing-light.jpg")`,
+        imageDark: `url("https://example.com/images/carsharing-dark.jpg")`,
     },
     {
-        icon: <GpsFixedIcon fontSize='large' />,
-        title: 'Real-Time Tracking',
+        icon: <EventAvailableIcon fontSize='large' />,
+        title: 'RENTAL',
         description:
-            'Monitor your vehicle’s location in real-time, ensuring a seamless rental experience.',
-        imageLight: `url("https://example.com/images/tracking-light.jpg")`,
-        imageDark: `url("https://example.com/images/tracking-dark.jpg")`,
-    },
-    {
-        icon: <PaymentIcon fontSize='large' />,
-        title: 'Flexible Payment Options',
-        description:
-            'Multiple payment methods available for your convenience, making renting simple and fast.',
-        imageLight: `url("https://example.com/images/payment-light.jpg")`,
-        imageDark: `url("https://example.com/images/payment-dark.jpg")`,
+            'Long-term rental — flexible terms for those who value freedom. Choose a car for days, weeks, or months at a fixed price.',
+        imageLight: `url("https://example.com/images/rental-light.jpg")`,
+        imageDark: `url("https://example.com/images/rental-dark.jpg")`,
     },
 ];
 
 function MobileLayout({ selectedItemIndex, handleItemClick, selectedFeature }) {
+    const theme = useTheme();
     if (!items[selectedItemIndex]) {
         return null;
     }
@@ -60,24 +61,39 @@ function MobileLayout({ selectedItemIndex, handleItemClick, selectedFeature }) {
                         color={
                             selectedItemIndex === index ? 'primary' : 'default'
                         }
+                        sx={{
+                            color: theme.palette.mode === 'light' ? '#111' : '#fff',
+                            fontWeight: 500,
+                            background: theme.palette.mode === 'light' ? '#fff' : '#222',
+                            border: `1px solid ${theme.palette.mode === 'light' ? '#111' : '#fff'}`,
+                        }}
                     />
                 ))}
             </Box>
-            <Card variant='outlined'>
+            <Card variant='outlined'
+                sx={{
+                    background: theme.palette.mode === 'light' ? '#fff' : '#111',
+                    borderColor: theme.palette.mode === 'light' ? '#111' : '#fff',
+                    color: theme.palette.mode === 'light' ? '#111' : '#fff',
+                }}
+            >
                 <Box
                     sx={{
                         mb: 2,
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
-                        minHeight: 280,
-                        backgroundImage: items[selectedItemIndex].imageLight,
+                        minHeight: 180,
+                        borderRadius: 2,
+                        backgroundImage: theme.palette.mode === 'light'
+                            ? items[selectedItemIndex].imageLight
+                            : items[selectedItemIndex].imageDark,
                     }}
                 />
                 <Box sx={{ px: 2, pb: 2 }}>
-                    <Typography gutterBottom sx={{ fontWeight: 'medium' }}>
+                    <Typography gutterBottom sx={{ fontWeight: 'medium', color: theme.palette.mode === 'light' ? '#111' : '#fff', textTransform: 'uppercase' }}>
                         {selectedFeature.title}
                     </Typography>
-                    <Typography variant='body2'>
+                    <Typography variant='body2' sx={{ color: theme.palette.mode === 'light' ? '#111' : '#fff' }}>
                         {selectedFeature.description}
                     </Typography>
                 </Box>
@@ -100,6 +116,7 @@ MobileLayout.propTypes = {
 
 export function Features() {
     const [selectedItemIndex, setSelectedItemIndex] = React.useState(0);
+    const theme = useTheme();
 
     const handleItemClick = (index) => {
         setSelectedItemIndex(index);
@@ -110,12 +127,11 @@ export function Features() {
     return (
         <Container sx={{ py: { xs: 8, sm: 16 } }}>
             <Box sx={{ width: { sm: '100%', md: '60%' } }}>
-                <Typography component='h2' variant='h4' gutterBottom>
-                    Car Sharing Features
+                <Typography component='h2' variant='h4' gutterBottom sx={{ color: theme.palette.mode === 'light' ? '#111' : '#fff', textTransform: 'uppercase' }}>
+                    Our Features
                 </Typography>
-                <Typography variant='body1' sx={{ mb: { xs: 2, sm: 4 } }}>
-                    Discover the key features of our car sharing service
-                    designed to make your ride effortless and enjoyable.
+                <Typography variant='body1' sx={{ mb: { xs: 2, sm: 4 }, color: theme.palette.mode === 'light' ? '#111' : '#fff' }}>
+                    We offer modern solutions for urban mobility: taxi, minute-based carsharing, and long-term car rental — all in one app.
                 </Typography>
             </Box>
             <Box
@@ -143,9 +159,12 @@ export function Features() {
                                 textTransform: 'none',
                                 backgroundColor:
                                     selectedItemIndex === index
-                                        ? 'action.selected'
+                                        ? (theme.palette.mode === 'light' ? '#f5f5f5' : '#222')
                                         : 'transparent',
-                                '&:hover': { backgroundColor: 'action.hover' },
+                                '&:hover': { backgroundColor: theme.palette.mode === 'light' ? '#eee' : '#222' },
+                                color: theme.palette.mode === 'light' ? '#111' : '#fff',
+                                alignItems: 'flex-start',
+                                borderRadius: 2,
                             }}
                         >
                             <Box
@@ -155,9 +174,11 @@ export function Features() {
                                     gap: 1,
                                 }}
                             >
-                                {icon}
-                                <Typography variant='h6'>{title}</Typography>
-                                <Typography variant='body2'>
+                                <Box sx={{ color: theme.palette.mode === 'light' ? '#111' : '#fff', fontSize: 48 }}>
+                                    {icon}
+                                </Box>
+                                <Typography variant='h6' sx={{ color: theme.palette.mode === 'light' ? '#111' : '#fff', textTransform: 'uppercase' }}>{title}</Typography>
+                                <Typography variant='body2' sx={{ color: theme.palette.mode === 'light' ? '#111' : '#fff' }}>
                                     {description}
                                 </Typography>
                             </Box>
@@ -176,16 +197,22 @@ export function Features() {
                             height: '100%',
                             width: '100%',
                             pointerEvents: 'none',
+                            background: theme.palette.mode === 'light' ? '#fff' : '#111',
+                            borderColor: theme.palette.mode === 'light' ? '#111' : '#fff',
+                            color: theme.palette.mode === 'light' ? '#111' : '#fff',
                         }}
                     >
                         <Box
                             sx={{
                                 m: 'auto',
                                 width: 420,
-                                height: 500,
-                                backgroundSize: 'contain',
-                                backgroundImage:
-                                    items[selectedItemIndex].imageLight,
+                                height: 220,
+                                backgroundSize: 'cover',
+                                backgroundPosition: 'center',
+                                borderRadius: 2,
+                                backgroundImage: theme.palette.mode === 'light'
+                                    ? items[selectedItemIndex].imageLight
+                                    : items[selectedItemIndex].imageDark,
                             }}
                         />
                     </Card>

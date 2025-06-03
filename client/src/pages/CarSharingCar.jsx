@@ -2,10 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { Container, Grid, Typography } from '@mui/material';
-import { styled } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import { carService } from '../infrastructure/services/cars/carService';
 
-// Redux selectors & actions
 import {
     getCarInfoRequest,
     carInfoLoadingSelector,
@@ -52,7 +51,12 @@ const CarPageContainer = styled(Container)(({ theme }) => ({
     backgroundColor: theme.palette.mode === 'dark' ? '#181818' : '#fff',
     color: theme.palette.mode === 'dark' ? '#fff' : '#000',
     padding: theme.spacing(4),
-    minHeight: '100vh'
+    minHeight: '100vh',
+    // Исправление: убираем белый фон в темной теме у MUI Container
+    '&.MuiContainer-root': {
+        backgroundColor: theme.palette.mode === 'dark' ? '#181818' : '#fff',
+        color: theme.palette.mode === 'dark' ? '#fff' : '#000',
+    }
 }));
 
 export default function CarSharingCar() {
@@ -64,14 +68,12 @@ export default function CarSharingCar() {
     const [endDateTime, setEndDateTime] = useState('');
     const [showBookingModal, setShowBookingModal] = useState(false);
 
-    // Для модалок характеристик
     const [openAdd, setOpenAdd] = useState(false);
     const [openEdit, setOpenEdit] = useState(false);
     const [editInfo, setEditInfo] = useState(null);
     const [attributeName, setAttributeName] = useState('');
     const [attributeValue, setAttributeValue] = useState('');
 
-    // Redux selectors
     const loadingInfo = useSelector(carInfoLoadingSelector);
     const errorInfo = useSelector(carInfoErrorSelector);
     const carInfo = useSelector(carInfoDataSelector);
@@ -80,26 +82,21 @@ export default function CarSharingCar() {
     const bookingError = useSelector(createBookingErrorSelector);
     const bookingSuccess = useSelector(createBookingSuccessSelector);
 
-    // carInfo create
     const createLoading = useSelector(createCarInfoLoadingSelector);
     const createError = useSelector(createCarInfoErrorSelector);
     const createSuccess = useSelector(createCarInfoSuccessSelector);
 
-    // carInfo delete
     const deleteLoading = useSelector(deleteCarInfoLoadingSelector);
     const deleteError = useSelector(deleteCarInfoErrorSelector);
     const deleteSuccess = useSelector(deleteCarInfoSuccessSelector);
 
-    // carInfo update
     const updateLoading = useSelector(updateCarInfoLoadingSelector);
     const updateError = useSelector(updateCarInfoErrorSelector);
     const updateSuccess = useSelector(updateCarInfoSuccessSelector);
 
-    // Получаем профиль пользователя для проверки роли
     const profile = useSelector(state => state.user.profile);
     const isAdmin = profile?.role === 'ADMIN';
 
-    // Получение данных о машине и характеристиках
     useEffect(() => {
         async function fetchCar() {
             try {
@@ -113,7 +110,6 @@ export default function CarSharingCar() {
         dispatch(getCarInfoRequest(id));
     }, [id, dispatch]);
 
-    // После успешного добавления/удаления/апдейта обновляем список характеристик
     useEffect(() => {
         if (createSuccess || deleteSuccess || updateSuccess) {
             dispatch(getCarInfoRequest(id));
@@ -147,7 +143,6 @@ export default function CarSharingCar() {
         }
     }, [bookingSuccess, dispatch]);
 
-    // --- carInfo handlers ---
     const handleOpenAdd = () => {
         setAttributeName('');
         setAttributeValue('');
@@ -186,7 +181,6 @@ export default function CarSharingCar() {
         }));
     };
 
-    // --- booking handlers ---
     const handleOpenBookingModal = (e) => {
         e.preventDefault();
         if (!startDateTime || !endDateTime) return;

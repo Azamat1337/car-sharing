@@ -23,15 +23,25 @@ api.interceptors.response.use(
             originalRequest._retry = true;
 
             const refreshToken = localStorage.getItem('refreshToken');
-            const { data } = await api.post('/auth/refresh', { refreshToken });
+            if (!refreshToken) {
+                return Promise.reject(error);
+            }
 
-            localStorage.setItem('accessToken', data.accessToken);
-            localStorage.setItem('refreshToken', data.refreshToken);
+            try {
+                const { data } = await api.post('/auth/refresh', { refreshToken });
+                localStorage.setItem('accessToken', data.accessToken);
+                localStorage.setItem('refreshToken', data.refreshToken);
 
-            originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
-            return api(originalRequest);
+                originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
+                return api(originalRequest);
+            } catch (refreshError) {
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('refreshToken');
+                return Promise.reject(refreshError);
+            }
         }
         return Promise.reject(error);
     }
 );
+
 export default api;

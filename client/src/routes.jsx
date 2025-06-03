@@ -28,7 +28,6 @@ import AdminChatsPage from './pages/admin/ChatsAdmin.jsx';
 import TaxiAdminPage from './pages/admin/TaxiAdmin.jsx';
 import CarSharingList from './pages/CarSharingList.jsx';
 import CarSharingCar from './pages/CarSharingCar.jsx';
-import { element } from 'prop-types';
 import BookingAdmin from './pages/admin/BookingAdmin.jsx';
 
 export const authRoutes = [

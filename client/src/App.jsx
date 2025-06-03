@@ -1,6 +1,6 @@
 import { BrowserRouter } from 'react-router-dom';
 import AppRouter from './components/AppRouter.jsx';
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { fetchProfileRequest } from "./infrastructure/redux/user/slice.js";
 import { lightTheme, darkTheme } from './infrastructure/routes/theme.js';
@@ -9,12 +9,14 @@ import { ThemeProvider, CssBaseline } from '@mui/material';
 function App() {
     const [darkMode, setDarkMode] = useState(localStorage.getItem('theme') === 'dark');
     const dispatch = useDispatch();
+    const profile = useSelector(state => state.user.profile);
 
     useEffect(() => {
-        if (localStorage.getItem('accessToken')) {
+        const token = localStorage.getItem('accessToken');
+        if (token && !profile) {
             dispatch(fetchProfileRequest());
         }
-    }, [dispatch]);
+    }, [dispatch, profile]);
 
     useEffect(() => {
         localStorage.setItem('theme', darkMode ? 'dark' : 'light');
