@@ -31,13 +31,13 @@ export default function CarInfoDialog({
     return (
         <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
             <DialogTitle>
-                {isEdit ? 'Редактировать характеристику' : 'Добавить характеристику'}
+                {isEdit ? 'Edit a specification' : 'Add a specification'}
             </DialogTitle>
             <form onSubmit={handleSubmit}>
                 <DialogContent>
                     {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
                     <TextField
-                        label="Название"
+                        label="Name"
                         value={attributeName}
                         onChange={e => setAttributeName(e.target.value)}
                         fullWidth
@@ -46,7 +46,7 @@ export default function CarInfoDialog({
                         disabled={loading}
                     />
                     <TextField
-                        label="Значение"
+                        label="Value"
                         value={attributeValue}
                         onChange={e => setAttributeValue(e.target.value)}
                         fullWidth
@@ -57,7 +57,7 @@ export default function CarInfoDialog({
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={onClose} disabled={loading}>
-                        Отмена
+                        Cancel
                     </Button>
                     <Button
                         type="submit"
@@ -65,7 +65,7 @@ export default function CarInfoDialog({
                         color="primary"
                         disabled={loading}
                     >
-                        {loading ? <CircularProgress size={24} /> : (isEdit ? 'Сохранить' : 'Добавить')}
+                        {loading ? <CircularProgress size={24} /> : (isEdit ? 'Save' : 'Add')}
                     </Button>
                 </DialogActions>
             </form>

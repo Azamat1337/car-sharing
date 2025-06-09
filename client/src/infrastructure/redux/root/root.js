@@ -32,6 +32,15 @@ import updateBrandReducer from '../brand/update/slice.js';
 import updatePostReducer from '../post/update/slice.js';
 import deletePostReducer from '../post/delete/slice.js';
 import leaveRideReducer from '../taxi/leave/slice.js';
+import deleteBookingReducer from '../booking/delete/slice.js';
+import createCompanyReducer from '../company/create/slice.js';
+import getAllCompaniesReducer from '../company/getAll/slice.js';
+import deleteCompanyReducer from '../company/delete/slice.js';
+import getOneCompanyReducer from '../company/getOne/slice.js';
+import updateCompanyReducer from '../company/update/slice.js';
+import getAiCarInfoReducer from '../ai/getCarInfo/slice.js';
+import deleteCarReducer from '../car/delete/slice.js';
+import updateCarReducer from '../car/update/slice.js';
 
 import { GET_BRANDS } from "../brand/get/slice.js";
 import { ADD_BRAND } from "../brand/add/slice.js";
@@ -66,6 +75,15 @@ import { UPDATE_BRAND } from "../brand/update/slice.js";
 import { UPDATE_POST } from "../post/update/slice.js";
 import { DELETE_POST } from "../post/delete/slice.js";
 import { LEAVE_RIDE } from "../taxi/leave/slice.js";
+import { DELETE_BOOKING } from "../booking/delete/slice.js";
+import { GET_ALL_COMPANIES } from "../company/getAll/slice.js";
+import { DELETE_COMPANY } from "../company/delete/slice.js";
+import { GET_ONE_COMPANY } from "../company/getOne/slice.js";
+import { UPDATE_COMPANY } from "../company/update/slice.js";
+import { CREATE_COMPANY } from "../company/create/slice.js";
+import { GET_AI_CAR_INFO } from "../ai/getCarInfo/slice.js";
+import { DELETE_CAR } from "../car/delete/slice.js";
+import { UPDATE_CAR } from "../car/update/slice.js";
 
 const rootReducer = combineReducers({
     [FETCH_NEWS]: newsReducer,
@@ -101,6 +119,15 @@ const rootReducer = combineReducers({
     [UPDATE_POST]: updatePostReducer,
     [DELETE_POST]: deletePostReducer,
     [LEAVE_RIDE]: leaveRideReducer,
+    [DELETE_BOOKING]: deleteBookingReducer,
+    [CREATE_COMPANY]: createCompanyReducer,
+    [GET_ALL_COMPANIES]: getAllCompaniesReducer,
+    [DELETE_COMPANY]: deleteCompanyReducer,
+    [GET_ONE_COMPANY]: getOneCompanyReducer,
+    [UPDATE_COMPANY]: updateCompanyReducer,
+    [GET_AI_CAR_INFO]: getAiCarInfoReducer,
+    [DELETE_CAR]: deleteCarReducer,
+    [UPDATE_CAR]: updateCarReducer,
 })
 
 export default rootReducer;

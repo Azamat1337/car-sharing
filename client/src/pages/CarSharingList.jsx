@@ -107,7 +107,7 @@ export default function CarSharingList() {
                     }
                 }}
             >
-                Carsharing <span>(Почасовой)</span>
+                Carsharing <span>(Hourly)</span>
             </Typography>
 
             <MainBox>

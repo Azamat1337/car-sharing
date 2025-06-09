@@ -7,6 +7,8 @@ import Chip from '@mui/material/Chip';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import { styled, useTheme } from '@mui/material/styles';
+import taxiServiceLight from '../assets/taxiservice_light.png';
+import taxiServiceDark from '../assets/taxiservice_black.png';
 
 import LocalTaxiIcon from '@mui/icons-material/LocalTaxi';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
@@ -18,24 +20,24 @@ const items = [
         title: 'TAXI SERVICE',
         description:
             'Fast and convenient taxi — get a ride in a few clicks, anytime. Transparent fares and professional drivers.',
-        imageLight: `url("https://example.com/images/taxi-light.jpg")`,
-        imageDark: `url("https://example.com/images/taxi-dark.jpg")`,
+        imageLight: taxiServiceLight,
+        imageDark: taxiServiceDark,
     },
     {
         icon: <DirectionsCarIcon fontSize='large' />,
         title: 'CARSHARING',
         description:
             'City carsharing — rent a car by the minute or hour. Perfect for business meetings, errands, or spontaneous trips.',
-        imageLight: `url("https://example.com/images/carsharing-light.jpg")`,
-        imageDark: `url("https://example.com/images/carsharing-dark.jpg")`,
+        imageLight: taxiServiceLight,
+        imageDark: taxiServiceDark,
     },
     {
         icon: <EventAvailableIcon fontSize='large' />,
         title: 'RENTAL',
         description:
             'Long-term rental — flexible terms for those who value freedom. Choose a car for days, weeks, or months at a fixed price.',
-        imageLight: `url("https://example.com/images/rental-light.jpg")`,
-        imageDark: `url("https://example.com/images/rental-dark.jpg")`,
+        imageLight: taxiServiceLight,
+        imageDark: taxiServiceDark,
     },
 ];
 
@@ -80,15 +82,27 @@ function MobileLayout({ selectedItemIndex, handleItemClick, selectedFeature }) {
                 <Box
                     sx={{
                         mb: 2,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
                         minHeight: 180,
                         borderRadius: 2,
-                        backgroundImage: theme.palette.mode === 'light'
-                            ? items[selectedItemIndex].imageLight
-                            : items[selectedItemIndex].imageDark,
+                        overflow: 'hidden',
                     }}
-                />
+                >
+                    <img
+                        src={theme.palette.mode === 'light'
+                            ? items[selectedItemIndex].imageLight
+                            : items[selectedItemIndex].imageDark}
+                        alt={selectedFeature.title}
+                        style={{
+                            width: '100%',
+                            height: 180,
+                            objectFit: 'cover',
+                            borderRadius: 8,
+                        }}
+                    />
+                </Box>
                 <Box sx={{ px: 2, pb: 2 }}>
                     <Typography gutterBottom sx={{ fontWeight: 'medium', color: theme.palette.mode === 'light' ? '#111' : '#fff', textTransform: 'uppercase' }}>
                         {selectedFeature.title}
@@ -205,16 +219,29 @@ export function Features() {
                         <Box
                             sx={{
                                 m: 'auto',
-                                width: 420,
-                                height: 220,
-                                backgroundSize: 'cover',
-                                backgroundPosition: 'center',
+                                width: 600,
+                                height: 600,
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
                                 borderRadius: 2,
-                                backgroundImage: theme.palette.mode === 'light'
-                                    ? items[selectedItemIndex].imageLight
-                                    : items[selectedItemIndex].imageDark,
+                                overflow: 'hidden',
                             }}
-                        />
+                        >
+                            <img
+                                src={theme.palette.mode === 'light'
+                                    ? items[selectedItemIndex].imageLight
+                                    : items[selectedItemIndex].imageDark}
+                                alt={selectedFeature.title}
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                    borderRadius: 8,
+                                    display: 'block',
+                                }}
+                            />
+                        </Box>
                     </Card>
                 </Box>
                 <MobileLayout

@@ -39,7 +39,7 @@ export default function BrandCreateDialog({ open, onClose }) {
 
     const handleCreate = () => {
         if (!brandName.trim()) return;
-        dispatch(addBrandRequest({ name: brandName.trim() }));
+        dispatch(addBrandRequest(brandName.trim()));
     };
 
     const handleClose = () => {

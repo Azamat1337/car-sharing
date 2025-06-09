@@ -1,4 +1,3 @@
-// controllers/brandController.js
 const { Brand } = require('../models/models');
 const ApiError = require('../error/ApiError');
 
@@ -34,7 +33,7 @@ class BrandController {
             if (!name) {
                 throw ApiError.badRequest('Brand name is required');
             }
-            // Проверяем уникальность
+
             const exists = await Brand.findOne({ where: { name } });
             if (exists) {
                 throw ApiError.badRequest('Brand already exists');
@@ -56,7 +55,6 @@ class BrandController {
                 throw ApiError.notFound(`Brand with id=${id} not found`);
             }
             if (name) {
-                // Проверка на дубликат
                 const duplicate = await Brand.findOne({ where: { name } });
                 if (duplicate && duplicate.id !== brand.id) {
                     throw ApiError.badRequest('Another brand with this name already exists');

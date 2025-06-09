@@ -13,6 +13,7 @@ import visuallyHidden from '@mui/utils/visuallyHidden';
 import { styled, alpha } from '@mui/material/styles';
 import { useNavigate } from 'react-router';
 import { REGISTRATION_ROUTE } from '../infrastructure/routes/index.js';
+import Logo from '../assets/logo_carsharing.png';
 
 const LogoBox = styled(Box)(({ theme }) => ({
     alignSelf: 'center',
@@ -175,8 +176,7 @@ export default function Hero() {
                     </Stack>
                 </Stack>
                 <LogoBox>
-                    {/* Здесь может быть логотип приложения */}
-                    LOGO
+                    <img src={Logo} alt="Logotype" style={{ borderRadius: '50%', }} />
                 </LogoBox>
             </Container>
         </Box>

@@ -1,17 +1,15 @@
-// controllers/bookingController.js
 const { Booking, Car, User } = require('../models/models');
 const ApiError = require('../error/ApiError');
 const { Op } = require('sequelize');
 
 class BookingController {
     // GET /api/bookings
-    // Admin-only: список всех бронирований
     async getAll(req, res, next) {
         try {
             const bookings = await Booking.findAll({
                 include: [
                     { model: User, as: 'user', attributes: ['id', 'username', 'email'] },
-                    { model: Car,  as: 'car',  attributes: ['id', 'model', 'year', 'img'] }
+                    { model: Car, as: 'car', attributes: ['id', 'model', 'year', 'img'] }
                 ],
                 order: [['startTime', 'DESC']]
             });
@@ -45,16 +43,13 @@ class BookingController {
             const booking = await Booking.findByPk(id, {
                 include: [
                     { model: User, as: 'user', attributes: ['id', 'username', 'email'] },
-                    { model: Car,  as: 'car',  attributes: ['id', 'model', 'year', 'img'] }
+                    { model: Car, as: 'car', attributes: ['id', 'model', 'year', 'img'] }
                 ]
             });
             if (!booking) {
                 throw ApiError.notFound(`Booking with id=${id} not found`);
             }
 
-            if (req.user.role !== 'ADMIN' && booking.userId !== req.user.id) {
-                throw ApiError.forbidden('Access denied');
-            }
             return res.json(booking);
         } catch (err) {
             next(err);
@@ -70,7 +65,7 @@ class BookingController {
                 throw ApiError.badRequest('carId, startTime and endTime are required');
             }
             const start = new Date(startTime);
-            const end   = new Date(endTime);
+            const end = new Date(endTime);
             if (start >= end) {
                 throw ApiError.badRequest('startTime must be before endTime');
             }
@@ -80,7 +75,7 @@ class BookingController {
                     carId,
                     [Op.or]: [
                         { startTime: { [Op.between]: [start, end] } },
-                        { endTime:   { [Op.between]: [start, end] } },
+                        { endTime: { [Op.between]: [start, end] } },
                         { startTime: { [Op.lte]: start }, endTime: { [Op.gte]: end } }
                     ]
                 }
@@ -109,7 +104,7 @@ class BookingController {
                 throw ApiError.forbidden('Access denied');
             }
             const start = startTime ? new Date(startTime) : booking.startTime;
-            const end   = endTime   ? new Date(endTime)   : booking.endTime;
+            const end = endTime ? new Date(endTime) : booking.endTime;
             if (start >= end) {
                 throw ApiError.badRequest('startTime must be before endTime');
             }
@@ -120,7 +115,7 @@ class BookingController {
                     id: { [Op.ne]: booking.id },
                     [Op.or]: [
                         { startTime: { [Op.between]: [start, end] } },
-                        { endTime:   { [Op.between]: [start, end] } },
+                        { endTime: { [Op.between]: [start, end] } },
                         { startTime: { [Op.lte]: start }, endTime: { [Op.gte]: end } }
                     ]
                 }
@@ -129,7 +124,7 @@ class BookingController {
                 throw ApiError.badRequest('Car is already booked for the selected period');
             }
             booking.startTime = start;
-            booking.endTime   = end;
+            booking.endTime = end;
             if (status) booking.status = status;
             await booking.save();
             return res.json(booking);
@@ -147,9 +142,6 @@ class BookingController {
                 throw ApiError.notFound(`Booking with id=${id} not found`);
             }
 
-            if (req.user.role !== 'ADMIN' && booking.userId !== req.user.id) {
-                throw ApiError.forbidden('Access denied');
-            }
             await booking.destroy();
             return res.json({ message: 'Booking cancelled successfully' });
         } catch (err) {

@@ -1,8 +1,8 @@
-import {createSlice} from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
     loading: false,
-    data: null, // теперь тут будет весь объект ответа с backend
+    data: null,
     error: null
 }
 
@@ -17,7 +17,7 @@ const getAllPostsSlice = createSlice({
             state.error = null;
         },
         getAllPostsSuccess: (state, action) => {
-            state.data = action.payload; // сохраняем весь объект (posts, totalItems, ...)
+            state.data = action.payload;
             state.loading = false;
         },
         getAllPostsFailure: (state, action) => {
@@ -28,11 +28,11 @@ const getAllPostsSlice = createSlice({
     selectors: {
         getAllPostsLoadingSelector: (state) => state.loading,
         getAllPostsErrorSelector: (state) => state.error,
-        getAllPostsDataSelector: (state) => state.data, // теперь возвращает весь объект
+        getAllPostsDataSelector: (state) => state.data,
     }
 })
 
-export const {getAllPostsDataSelector, getAllPostsLoadingSelector, getAllPostsErrorSelector} = getAllPostsSlice.selectors;
-export const {getAllPostsFailure, getAllPostsRequest, getAllPostsSuccess} = getAllPostsSlice.actions;
+export const { getAllPostsDataSelector, getAllPostsLoadingSelector, getAllPostsErrorSelector } = getAllPostsSlice.selectors;
+export const { getAllPostsFailure, getAllPostsRequest, getAllPostsSuccess } = getAllPostsSlice.actions;
 export default getAllPostsSlice.reducer;
 

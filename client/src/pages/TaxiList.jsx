@@ -157,27 +157,24 @@ export default function TaxiListPage() {
                 loading={addLoading}
             />
 
-            {/* Success Alert */}
             {addSuccess && (
                 <Alert severity="success" sx={{ my: 2 }}>
                     Ride created successfully!
                 </Alert>
             )}
-            {/* Error Alert */}
+
             {addError && (
                 <Alert severity="error" sx={{ my: 2 }}>
                     Failed to create ride. Please try again.
                 </Alert>
             )}
 
-            {/* Join ride error alert */}
             {joinError && (
                 <Alert severity="error" sx={{ my: 2 }}>
                     {joinError}
                 </Alert>
             )}
 
-            {/* Leave ride alerts */}
             {leaveSuccess && (
                 <Alert severity="success" sx={{ my: 2 }}>
                     You have left the ride.

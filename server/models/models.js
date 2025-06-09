@@ -89,28 +89,28 @@ const RideParticipant = sequelize.define('RideParticipant', {
     joinedAt: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW }
 });
 
-// Ассоциации
-// RefreshToken -> User (N:1)
+const Company = sequelize.define("Company", {
+    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    name: { type: DataTypes.STRING, allowNull: false, unique: true },
+    description: { type: DataTypes.TEXT },
+    foundedYear: { type: DataTypes.INTEGER },
+});
+
 User.hasMany(RefreshToken, { foreignKey: 'userId', as: 'refreshTokens' });
 RefreshToken.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
-// Бренд -> Автомобиль (1:N)
 Brand.hasMany(Car, { foreignKey: 'brandId', as: 'cars' });
 Car.belongsTo(Brand, { foreignKey: 'brandId', as: 'brand' });
 
-// Автомобиль -> CarInfo (1:N)
 Car.hasMany(CarInfo, { foreignKey: 'carId', as: 'info' });
 CarInfo.belongsTo(Car, { foreignKey: 'carId', as: 'car' });
 
-// Пользователь -> Бронирования (1:N)
 User.hasMany(Booking, { foreignKey: 'userId', as: 'bookings' });
 Booking.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
-// Автомобиль -> Бронирования (1:N)
 Car.hasMany(Booking, { foreignKey: 'carId', as: 'bookings' });
 Booking.belongsTo(Car, { foreignKey: 'carId', as: 'car' });
 
-// Пользователь -> Посты (1:N)
 User.hasMany(Post, { foreignKey: 'authorId', as: 'posts' });
 Post.belongsTo(User, { foreignKey: 'authorId', as: 'author' });
 
@@ -132,6 +132,9 @@ RideParticipant.belongsTo(Ride, { foreignKey: 'rideId', as: 'ride' });
 User.hasMany(RideParticipant, { foreignKey: 'userId', as: 'rideBookings' });
 RideParticipant.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
+Company.hasMany(Car, { foreignKey: 'companyId', as: 'cars' });
+Car.belongsTo(Company, { foreignKey: 'companyId', as: 'company' });
+
 module.exports = {
     User,
     RefreshToken,
@@ -144,4 +147,5 @@ module.exports = {
     RideParticipant,
     Conversation,
     Message,
+    Company,
 };

@@ -1,21 +1,26 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Container, Typography, Grid, Box, Button } from '@mui/material';
 import { useDispatch } from 'react-redux';
 import { getBrandsRequest } from "../infrastructure/redux/brand/get/slice.js";
+import { getAllCompaniesRequest } from '../infrastructure/redux/company/getAll/slice.js';
 
 import BrandList from '../components/Admin/BrandList.jsx';
 import BrandCreateDialog from '../components/Admin/BrandCreateDialog.jsx';
 import PostCreateDialog from '../components/Admin/PostCreateDialog.jsx';
 import CarCreateDialog from '../components/Admin/CarCreateDialog.jsx';
+import CompanyCreateDialog from '../components/Admin/CompanyCreateDialog.jsx';
+import CompaniesList from '../components/Admin/CompaniesList.jsx';
 
 export default function AdminPanel() {
     const dispatch = useDispatch();
-    const [openBrand, setOpenBrand] = React.useState(false);
-    const [openPost, setOpenPost] = React.useState(false);
-    const [openCar, setOpenCar] = React.useState(false);
+    const [openBrand, setOpenBrand] = useState(false);
+    const [openPost, setOpenPost] = useState(false);
+    const [openCar, setOpenCar] = useState(false);
+    const [openCompany, setOpenCompany] = useState(false);
 
     useEffect(() => {
         dispatch(getBrandsRequest());
+        dispatch(getAllCompaniesRequest());
     }, [dispatch]);
 
     return (
@@ -39,7 +44,6 @@ export default function AdminPanel() {
                         </Button>
                     </Box>
                     <PostCreateDialog open={openPost} onClose={() => setOpenPost(false)} />
-                    {/* Здесь будет PostList */}
                 </Grid>
                 <Grid item xs={12} md={6}>
                     <Box mb={2} display="flex" justifyContent="space-between" alignItems="center">
@@ -53,7 +57,20 @@ export default function AdminPanel() {
                         </Button>
                     </Box>
                     <CarCreateDialog open={openCar} onClose={() => setOpenCar(false)} />
-                    {/* Здесь будет CarList */}
+                </Grid>
+                <Grid item xs={12} md={6}>
+                    <Box mb={2} display="flex" justifyContent="space-between" alignItems="center">
+                        <Typography variant="h6">Компании</Typography>
+                        <Button
+                            variant="contained"
+                            color="info"
+                            onClick={() => setOpenCompany(true)}
+                        >
+                            Создать компанию
+                        </Button>
+                    </Box>
+                    <CompaniesList />
+                    <CompanyCreateDialog open={openCompany} onClose={() => setOpenCompany(false)} />
                 </Grid>
             </Grid>
             <BrandCreateDialog open={openBrand} onClose={() => setOpenBrand(false)} />

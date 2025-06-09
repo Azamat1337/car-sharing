@@ -43,25 +43,25 @@ export default function CarInfoTable({
         <InfoCard>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Typography variant="h6" gutterBottom>
-                    Характеристики
+                    Specifications
                 </Typography>
                 {isAdmin && (
                     <Button size="small" variant="outlined" onClick={onAdd}>
-                        Добавить
+                        Add
                     </Button>
                 )}
             </Box>
             {createError && <Alert severity="error" sx={{ mb: 1 }}>{createError}</Alert>}
             {deleteError && <Alert severity="error" sx={{ mb: 1 }}>{deleteError}</Alert>}
             {updateError && <Alert severity="error" sx={{ mb: 1 }}>{updateError}</Alert>}
-            {loading && <Typography>Загрузка характеристик...</Typography>}
+            {loading && <Typography>Loading specifications...</Typography>}
             {error && <Typography color="error">{error}</Typography>}
             {!loading && !error && (
                 <Table size="small">
                     <TableBody>
                         {carInfo.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={isAdmin ? 3 : 2}>Нет характеристик</TableCell>
+                                <TableCell colSpan={isAdmin ? 3 : 2}>There are no specifications</TableCell>
                             </TableRow>
                         )}
                         {carInfo.map(info => (

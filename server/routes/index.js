@@ -7,6 +7,7 @@ const postRouter = require('./postRouter');
 const carInfoRouter = require('./carInfoRouter');
 const chatRouter = require('./chatRouter');
 const taxiRouter = require('./taxiRouter');
+const companyRouter = require('./companyRouter');
 
 const router = new Router();
 
@@ -18,5 +19,6 @@ router.use('/post', postRouter);
 router.use('/', carInfoRouter)
 router.use('/chat', chatRouter);
 router.use('/taxi', taxiRouter);
+router.use('/companies', companyRouter);
 
 module.exports = router;

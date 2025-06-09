@@ -117,7 +117,7 @@ export default function RentalList() {
                     }
                 }}
             >
-                Аренда <span>(Посуточно)</span>
+                Rent <span>(Daily)</span>
             </Typography>
 
             <MainBox>

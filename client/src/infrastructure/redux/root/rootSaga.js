@@ -32,6 +32,15 @@ import { updateBookingWatcher } from '../booking/update/saga/watcher.js';
 import { updateBrandWatcher } from '../brand/update/saga/watcher.js';
 import { updatePostWatcher } from '../post/update/saga/watcher.js';
 import { leaveRideWatcher } from '../taxi/leave/saga/watcher.js';
+import { deleteBookingWatcher } from '../booking/delete/saga/watcher.js';
+import { getAllCompaniesWatcher } from '../company/getAll/saga/watcher.js';
+import { deleteCompanyWatcher } from '../company/delete/saga/watcher.js';
+import { getOneCompanyWatcher } from '../company/getOne/saga/watcher.js';
+import { updateCompanyWatcher } from '../company/update/saga/watcher.js';
+import { createCompanyWatcher } from '../company/create/saga/watcher.js';
+import { getAiCarInfoWatcher } from '../ai/getCarInfo/saga/watcher.js';
+import { deleteCarWatcher } from '../car/delete/saga/watcher.js';
+import { updateCarWatcher } from '../car/update/saga/watcher.js';
 
 export default function* rootSaga() {
     yield all([
@@ -68,5 +77,14 @@ export default function* rootSaga() {
         updateBrandWatcher(),
         updatePostWatcher(),
         leaveRideWatcher(),
+        deleteBookingWatcher(),
+        getAllCompaniesWatcher(),
+        deleteCompanyWatcher(),
+        getOneCompanyWatcher(),
+        updateCompanyWatcher(),
+        createCompanyWatcher(),
+        getAiCarInfoWatcher(),
+        deleteCarWatcher(),
+        updateCarWatcher(),
     ]);
 }

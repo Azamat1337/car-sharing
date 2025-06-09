@@ -24,25 +24,25 @@ export default function BookingConfirmDialog({
 }) {
     return (
         <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-            <DialogTitle>Подтвердить бронирование</DialogTitle>
+            <DialogTitle>Confirm your booking</DialogTitle>
             <DialogContent>
                 {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
                 <Typography variant="subtitle1" gutterBottom>
-                    Вы уверены, что хотите забронировать автомобиль:
+                    Are you sure you want to book a car:
                 </Typography>
                 <Typography variant="h6" gutterBottom>
                     {car?.brand?.name} {car?.model}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                    С: {startDate ? dayjs(startDate).format('DD.MM.YYYY HH:mm') : '-'}
+                    From: {startDate ? dayjs(startDate).format('DD.MM.YYYY HH:mm') : '-'}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" gutterBottom>
-                    По: {endDate ? dayjs(endDate).format('DD.MM.YYYY HH:mm') : '-'}
+                    To: {endDate ? dayjs(endDate).format('DD.MM.YYYY HH:mm') : '-'}
                 </Typography>
             </DialogContent>
             <DialogActions>
                 <Button onClick={onClose} disabled={loading}>
-                    Отмена
+                    Cancel
                 </Button>
                 <Button
                     onClick={onConfirm}
@@ -50,7 +50,7 @@ export default function BookingConfirmDialog({
                     color="primary"
                     disabled={loading}
                 >
-                    {loading ? <CircularProgress size={24} /> : 'Подтвердить'}
+                    {loading ? <CircularProgress size={24} /> : 'Confirm'}
                 </Button>
             </DialogActions>
         </Dialog>

@@ -1,26 +1,30 @@
 const path = require('path');
 const uuid = require('uuid');
-const { Car, CarInfo, Brand } = require('../models/models');
+const { Car, CarInfo, Brand, Company } = require('../models/models'); // Добавляем Company
 const ApiError = require('../error/ApiError');
 const { Op } = require('sequelize');
 
-
 class CarController {
-    // POST /api/cars
+    // POST /api/car
     async create(req, res, next) {
         try {
-            const { model, year, brandId, available, info, rentalType, dailyPrice, hourlyPrice } = req.body;
+            const { model, year, brandId, companyId, available, info, rentalType, dailyPrice, hourlyPrice } = req.body;
             const { img } = req.files || {};
 
-            // Проверяем обязательные поля
             if (!model || !year || !brandId || !img) {
                 throw ApiError.badRequest('Model, year, brandId and image are required');
             }
 
-            // Проверяем бренд
             const brand = await Brand.findByPk(brandId);
             if (!brand) {
                 throw ApiError.notFound(`Brand with id=${brandId} not found`);
+            }
+
+            if (companyId) {
+                const company = await Company.findByPk(companyId);
+                if (!company) {
+                    throw ApiError.notFound(`Company with id=${companyId} not found`);
+                }
             }
 
             if ((rentalType === 'DAILY' || rentalType === 'BOTH') && (!dailyPrice || Number(dailyPrice) <= 0)) {
@@ -30,21 +34,21 @@ class CarController {
                 throw ApiError.badRequest('hourlyPrice должен быть больше 0 для каршеринга');
             }
 
-            // Сохраняем файл изображения
             const fileName = uuid.v4() + path.extname(img.name);
             await img.mv(path.resolve(__dirname, '..', 'static', fileName));
 
-            // Создаём автомобиль
             const car = await Car.create({
                 model,
                 year,
                 available: available !== undefined ? available : true,
                 img: fileName,
                 brandId,
-                rentalType: rentalType || 'DAILY'
+                companyId: companyId || null,
+                rentalType: rentalType || 'DAILY',
+                dailyPrice: dailyPrice || 0,
+                hourlyPrice: hourlyPrice || 0
             });
 
-            // Дополнительные характеристики (опционально)
             if (info) {
                 const parsed = JSON.parse(info);
                 for (const item of parsed) {
@@ -62,17 +66,18 @@ class CarController {
         }
     }
 
-    // GET /api/cars
+    // GET /api/car
     async getAll(req, res, next) {
         try {
-            const { brandId, year, model, available, page = 1, limit = 10, rentalType } = req.query;
+            const { brandId, companyId, year, model, available, page = 1, limit = 10, rentalType } = req.query;
             const filter = {};
 
             if (rentalType) filter.rentalType = rentalType;
             if (brandId) filter.brandId = brandId;
+            if (companyId) filter.companyId = companyId;
             if (year) filter.year = year;
             if (model) {
-                filter.model = { [Op.iLike]: `%${model}%` }; // <-- вот здесь частичное совпадение
+                filter.model = { [Op.iLike]: `%${model}%` };
             }
             if (available !== undefined) filter.available = available === 'true';
 
@@ -82,6 +87,7 @@ class CarController {
                 where: filter,
                 include: [
                     { model: Brand, as: 'brand', attributes: ['id', 'name'] },
+                    { model: Company, as: 'company', attributes: ['id', 'name', 'description'] }, // Добавляем Company
                     { model: CarInfo, as: 'info', attributes: ['attributeName', 'attributeValue'] }
                 ],
                 order: [['id', 'ASC']],
@@ -100,13 +106,14 @@ class CarController {
         }
     }
 
-    // GET /api/cars/:id
+    // GET /api/car/:id
     async getOne(req, res, next) {
         try {
             const { id } = req.params;
             const car = await Car.findByPk(id, {
                 include: [
                     { model: Brand, as: 'brand', attributes: ['id', 'name'] },
+                    { model: Company, as: 'company', attributes: ['id', 'name', 'description', 'foundedYear'] }, // Добавляем Company
                     { model: CarInfo, as: 'info', attributes: ['attributeName', 'attributeValue'] }
                 ]
             });
@@ -119,11 +126,11 @@ class CarController {
         }
     }
 
-    // PUT /api/cars/:id
+    // PUT /api/car/:id
     async update(req, res, next) {
         try {
             const { id } = req.params;
-            const { model, year, brandId, available, rentalType, dailyPrice, hourlyPrice } = req.body;
+            const { model, year, brandId, companyId, available, rentalType, dailyPrice, hourlyPrice } = req.body;
             const car = await Car.findByPk(id);
             if (!car) {
                 throw ApiError.notFound(`Car with id=${id} not found`);
@@ -134,12 +141,19 @@ class CarController {
                 if (!brand) throw ApiError.notFound(`Brand with id=${brandId} not found`);
                 car.brandId = brandId;
             }
+
+            if (companyId !== undefined) {
+                if (companyId) {
+                    const company = await Company.findByPk(companyId);
+                    if (!company) throw ApiError.notFound(`Company with id=${companyId} not found`);
+                }
+                car.companyId = companyId;
+            }
+
             if (model !== undefined) car.model = model;
             if (year !== undefined) car.year = year;
             if (available !== undefined) car.available = available;
-            if (rentalType !== undefined) {
-                car.rentalType = rentalType;
-            }
+            if (rentalType !== undefined) car.rentalType = rentalType;
             if (dailyPrice !== undefined) car.dailyPrice = dailyPrice;
             if (hourlyPrice !== undefined) car.hourlyPrice = hourlyPrice;
 
@@ -157,7 +171,7 @@ class CarController {
         }
     }
 
-    // DELETE /api/cars/:id
+    // DELETE /api/car/:id
     async delete(req, res, next) {
         try {
             const { id } = req.params;

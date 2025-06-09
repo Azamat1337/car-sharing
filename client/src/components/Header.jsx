@@ -84,11 +84,11 @@ export default function Header() {
                             }}
                         >
                             <MenuItem onClick={() => { navigate(USER_ROUTE); setAnchorEl(null); }}>
-                                👤 Профиль
+                                👤 Profile
                             </MenuItem>
                             {role === 'ADMIN' && (
                                 <MenuItem onClick={() => { navigate(ADMIN_ROUTE); setAnchorEl(null); }}>
-                                    🛠️ Админ-панель
+                                    🛠️ Admin-Panel
                                 </MenuItem>
                             )}
                             <Divider sx={{ my: 0.5 }} />
@@ -96,7 +96,7 @@ export default function Header() {
                                 onClick={handleLogout}
                                 sx={{ color: 'error.main' }}
                             >
-                                🚪 Выйти
+                                🚪 Logout
                             </MenuItem>
                         </Menu>
                     </Box>

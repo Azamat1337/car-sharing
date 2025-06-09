@@ -28,7 +28,7 @@ export default function CarBookingForm({
     return (
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2, mb: 2 }}>
             <Typography variant="h6" gutterBottom>
-                Забронировать автомобиль
+                Book a car
             </Typography>
             {bookingError && (
                 <Alert severity="error" sx={{ mb: 2 }}>
@@ -37,11 +37,11 @@ export default function CarBookingForm({
             )}
             {bookingSuccess && (
                 <Alert severity="success" sx={{ mb: 2 }}>
-                    Бронирование успешно создано!
+                    The booking has been successfully created!
                 </Alert>
             )}
             <DateTimePicker
-                label="Дата и время начала"
+                label="Start date and time"
                 value={startDate ? dayjs(startDate) : null}
                 onChange={val => setStartDate(val ? val.toISOString() : '')}
                 renderInput={(params) => <TextField {...params} fullWidth margin="normal" />}
@@ -49,7 +49,7 @@ export default function CarBookingForm({
                 disabled={bookingLoading}
             />
             <DateTimePicker
-                label="Дата и время окончания"
+                label="End date and time"
                 value={endDate ? dayjs(endDate) : null}
                 onChange={val => setEndDate(val ? val.toISOString() : '')}
                 renderInput={(params) => <TextField {...params} fullWidth margin="normal" />}
@@ -64,7 +64,7 @@ export default function CarBookingForm({
                 disabled={bookingLoading || !startDate || !endDate}
                 fullWidth
             >
-                {bookingLoading ? <CircularProgress size={24} /> : 'Забронировать'}
+                {bookingLoading ? <CircularProgress size={24} /> : 'To book'}
             </Button>
         </Box>
     );

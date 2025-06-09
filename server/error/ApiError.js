@@ -1,8 +1,4 @@
 class ApiError extends Error {
-    /**
-     * @param {number} status – HTTP-код ошибки
-     * @param {string} message – Читабельное сообщение
-     */
     constructor(status, message) {
         super(message);
         this.status = status;

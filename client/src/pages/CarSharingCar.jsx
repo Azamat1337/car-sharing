@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router';
+import { useParams, useNavigate } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
-import { Container, Grid, Typography } from '@mui/material';
-import { styled, useTheme } from '@mui/material/styles';
+import { Container, Grid, Typography, Snackbar, Alert as MuiAlert, Box, IconButton, Tooltip } from '@mui/material';
+import { styled } from '@mui/material/styles';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { carService } from '../infrastructure/services/cars/carService';
 
 import {
@@ -39,6 +41,20 @@ import {
     updateCarInfoErrorSelector,
     updateCarInfoSuccessSelector
 } from '../infrastructure/redux/carInfo/update/slice';
+import {
+    deleteCarRequest,
+    deleteCarReset,
+    deleteCarLoadingSelector,
+    deleteCarErrorSelector,
+    deleteCarSuccessSelector
+} from '../infrastructure/redux/car/delete/slice';
+import {
+    updateCarRequest,
+    updateCarReset,
+    updateCarLoadingSelector,
+    updateCarErrorSelector,
+    updateCarDataSelector
+} from '../infrastructure/redux/car/update/slice';
 
 import CarImageBlock from '../components/Car/CarImageBlock.jsx';
 import CarMainInfo from '../components/Car/CarMainInfo.jsx';
@@ -46,22 +62,41 @@ import CarBookingForm from '../components/Car/CarBookingForm.jsx';
 import BookingConfirmDialog from '../components/Car/BookingConfirmDialog.jsx';
 import CarInfoTable from '../components/Car/CarInfoTable.jsx';
 import CarInfoDialog from '../components/Car/CarInfoDialog.jsx';
+import CarDeleteDialog from '../components/Admin/CarDeleteDialog.jsx';
+import CarEditDialog from '../components/Admin/CarEditDialog.jsx';
 
 const CarPageContainer = styled(Container)(({ theme }) => ({
     backgroundColor: theme.palette.mode === 'dark' ? '#181818' : '#fff',
     color: theme.palette.mode === 'dark' ? '#fff' : '#000',
     padding: theme.spacing(4),
     minHeight: '100vh',
-    // Исправление: убираем белый фон в темной теме у MUI Container
     '&.MuiContainer-root': {
         backgroundColor: theme.palette.mode === 'dark' ? '#181818' : '#fff',
         color: theme.palette.mode === 'dark' ? '#fff' : '#000',
     }
 }));
 
+const ImageContainer = styled(Box)({
+    position: 'relative',
+    width: '100%',
+});
+
+const AdminControls = styled(Box)(({ theme }) => ({
+    position: 'absolute',
+    top: theme.spacing(1),
+    right: theme.spacing(1),
+    display: 'flex',
+    gap: theme.spacing(1),
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    borderRadius: theme.spacing(1),
+    padding: theme.spacing(0.5),
+    zIndex: 10,
+}));
+
 export default function CarSharingCar() {
     const { id } = useParams();
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const [car, setCar] = useState(null);
     const [startDateTime, setStartDateTime] = useState('');
@@ -73,6 +108,11 @@ export default function CarSharingCar() {
     const [editInfo, setEditInfo] = useState(null);
     const [attributeName, setAttributeName] = useState('');
     const [attributeValue, setAttributeValue] = useState('');
+
+    const [openDeleteCar, setOpenDeleteCar] = useState(false);
+    const [openEditCar, setOpenEditCar] = useState(false);
+
+    const [alert, setAlert] = useState({ open: false, type: 'success', message: '' });
 
     const loadingInfo = useSelector(carInfoLoadingSelector);
     const errorInfo = useSelector(carInfoErrorSelector);
@@ -93,6 +133,15 @@ export default function CarSharingCar() {
     const updateLoading = useSelector(updateCarInfoLoadingSelector);
     const updateError = useSelector(updateCarInfoErrorSelector);
     const updateSuccess = useSelector(updateCarInfoSuccessSelector);
+
+    const deleteCarLoading = useSelector(deleteCarLoadingSelector);
+    const deleteCarError = useSelector(deleteCarErrorSelector);
+    const deleteCarSuccess = useSelector(deleteCarSuccessSelector);
+
+    const updateCarLoading = useSelector(updateCarLoadingSelector);
+    const updateCarError = useSelector(updateCarErrorSelector);
+    const updatedCar = useSelector(updateCarDataSelector);
+    const updateCarSuccess = !!updatedCar;
 
     const profile = useSelector(state => state.user.profile);
     const isAdmin = profile?.role === 'ADMIN';
@@ -137,11 +186,41 @@ export default function CarSharingCar() {
             setStartDateTime('');
             setEndDateTime('');
             setShowBookingModal(false);
+            setAlert({ open: true, type: 'success', message: 'Booking is successful!' });
             setTimeout(() => {
                 dispatch(createBookingReset());
             }, 2000);
         }
     }, [bookingSuccess, dispatch]);
+
+    useEffect(() => {
+        if (bookingError) {
+            setAlert({ open: true, type: 'error', message: bookingError });
+        }
+    }, [bookingError]);
+
+    useEffect(() => {
+        if (deleteCarSuccess) {
+            setOpenDeleteCar(false);
+            setAlert({ open: true, type: 'success', message: 'Car deleted successfully!' });
+            setTimeout(() => {
+                dispatch(deleteCarReset());
+                navigate('/carsharing');
+            }, 1000);
+        }
+    }, [deleteCarSuccess, dispatch, navigate]);
+
+    useEffect(() => {
+        if (updateCarSuccess) {
+            setOpenEditCar(false);
+            setCar(updatedCar);
+            setAlert({ open: true, type: 'success', message: 'Car updated successfully!' });
+            setTimeout(() => {
+                dispatch(updateCarReset());
+                dispatch(getCarInfoRequest(id));
+            }, 2000);
+        }
+    }, [updateCarSuccess, updatedCar, dispatch]);
 
     const handleOpenAdd = () => {
         setAttributeName('');
@@ -159,7 +238,7 @@ export default function CarSharingCar() {
     };
 
     const handleDeleteInfo = (infoId) => {
-        if (window.confirm('Удалить характеристику?')) {
+        if (window.confirm('Delete a specification?')) {
             dispatch(deleteCarInfoRequest({ carId: car.id, infoId }));
         }
     };
@@ -182,13 +261,18 @@ export default function CarSharingCar() {
     };
 
     const handleOpenBookingModal = (e) => {
-        e.preventDefault();
-        if (!startDateTime || !endDateTime) return;
+        if (!profile) {
+            setAlert({ open: true, type: 'error', message: 'Log in to your booking account.' });
+            return;
+        }
+        if (!startDateTime || !endDateTime) {
+            setAlert({ open: true, type: 'error', message: 'Select the booking dates.' });
+            return;
+        }
         setShowBookingModal(true);
     };
 
     const handleConfirmBooking = () => {
-        setShowBookingModal(false);
         dispatch(createBookingRequest({
             carId: car.id,
             startTime: startDateTime,
@@ -196,11 +280,39 @@ export default function CarSharingCar() {
         }));
     };
 
+    const handleDeleteCarClick = () => {
+        setOpenDeleteCar(true);
+    };
+
+    const handleEditCarClick = () => {
+        setOpenEditCar(true);
+    };
+
+    const handleDeleteCarConfirm = () => {
+        dispatch(deleteCarRequest(car.id));
+    };
+
+    const handleDeleteCarClose = () => {
+        setOpenDeleteCar(false);
+        dispatch(deleteCarReset());
+    };
+
+    const handleEditCarSubmit = (formData) => {
+        dispatch(updateCarRequest({ id: car.id, ...formData }));
+    };
+
+    const handleEditCarClose = () => {
+        setOpenEditCar(false);
+        dispatch(updateCarReset());
+    };
+
+    const handleCloseAlert = () => setAlert({ ...alert, open: false });
+
     if (!car) {
         return (
             <CarPageContainer maxWidth="md">
                 <Typography variant="h5" align="center" sx={{ mt: 8 }}>
-                    Машина не найдена
+                    The car was not found
                 </Typography>
             </CarPageContainer>
         );
@@ -210,7 +322,39 @@ export default function CarSharingCar() {
         <CarPageContainer maxWidth="md">
             <Grid container spacing={4}>
                 <Grid item xs={12}>
-                    <CarImageBlock car={car} />
+                    <ImageContainer>
+                        {isAdmin && (
+                            <AdminControls>
+                                <Tooltip title="Edit car">
+                                    <IconButton
+                                        size="small"
+                                        onClick={handleEditCarClick}
+                                        disabled={updateCarLoading || deleteCarLoading}
+                                        sx={{
+                                            color: 'white',
+                                            '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' }
+                                        }}
+                                    >
+                                        <EditIcon />
+                                    </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Delete car">
+                                    <IconButton
+                                        size="small"
+                                        onClick={handleDeleteCarClick}
+                                        disabled={updateCarLoading || deleteCarLoading}
+                                        sx={{
+                                            color: 'white',
+                                            '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' }
+                                        }}
+                                    >
+                                        <DeleteIcon />
+                                    </IconButton>
+                                </Tooltip>
+                            </AdminControls>
+                        )}
+                        <CarImageBlock car={car} />
+                    </ImageContainer>
                 </Grid>
                 <Grid item xs={12} md={8}>
                     <CarMainInfo car={car} />
@@ -244,7 +388,6 @@ export default function CarSharingCar() {
                 </Grid>
             </Grid>
 
-            {/* Модалка подтверждения бронирования */}
             <BookingConfirmDialog
                 open={showBookingModal}
                 onClose={() => setShowBookingModal(false)}
@@ -256,7 +399,6 @@ export default function CarSharingCar() {
                 error={bookingError}
             />
 
-            {/* Модалка для добавления характеристики */}
             <CarInfoDialog
                 open={openAdd}
                 onClose={() => setOpenAdd(false)}
@@ -270,7 +412,6 @@ export default function CarSharingCar() {
                 isEdit={false}
             />
 
-            {/* Модалка для редактирования характеристики */}
             <CarInfoDialog
                 open={openEdit}
                 onClose={() => setOpenEdit(false)}
@@ -283,6 +424,36 @@ export default function CarSharingCar() {
                 error={updateError}
                 isEdit={true}
             />
+
+            {/* Диалоги для управления машиной */}
+            <CarDeleteDialog
+                open={openDeleteCar}
+                onClose={handleDeleteCarClose}
+                onConfirm={handleDeleteCarConfirm}
+                car={car}
+                loading={deleteCarLoading}
+                error={deleteCarError}
+            />
+
+            <CarEditDialog
+                open={openEditCar}
+                onClose={handleEditCarClose}
+                onSubmit={handleEditCarSubmit}
+                car={car}
+                loading={updateCarLoading}
+                error={updateCarError}
+            />
+
+            <Snackbar
+                open={alert.open}
+                autoHideDuration={3000}
+                onClose={handleCloseAlert}
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+            >
+                <MuiAlert onClose={handleCloseAlert} severity={alert.type} sx={{ width: '100%' }}>
+                    {alert.message}
+                </MuiAlert>
+            </Snackbar>
         </CarPageContainer>
     );
 }
