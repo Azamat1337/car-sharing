@@ -2,7 +2,6 @@ const { Conversation, Message, User } = require('../models/models');
 const ApiError = require('../error/ApiError');
 
 class ChatController {
-
     // POST /api/chats
     async startConversation(req, res, next) {
         try {
@@ -54,7 +53,7 @@ class ChatController {
             const { convId } = req.params;
             const conv = await Conversation.findByPk(convId);
             if (!conv) throw ApiError.notFound('Conversation not found');
-            // only owner or admin
+
             if (req.user.role !== 'ADMIN' && conv.userId !== req.user.id) {
                 throw ApiError.forbidden('Access denied');
             }
@@ -72,9 +71,11 @@ class ChatController {
         try {
             const { convId } = req.params;
             const { content } = req.body;
+
             if (!content) throw ApiError.badRequest('Message content required');
 
             const conv = await Conversation.findByPk(convId);
+
             if (!conv) throw ApiError.notFound('Conversation not found');
             if (req.user.role !== 'ADMIN' && conv.userId !== req.user.id) {
                 throw ApiError.forbidden('Access denied');

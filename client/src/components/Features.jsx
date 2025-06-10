@@ -9,6 +9,10 @@ import Typography from '@mui/material/Typography';
 import { styled, useTheme } from '@mui/material/styles';
 import taxiServiceLight from '../assets/taxiservice_light.png';
 import taxiServiceDark from '../assets/taxiservice_black.png';
+import carsharingLight from '../assets/white_carsharing.png';
+import carsharingDark from '../assets/black_carsharing.png';
+import rentalLight from '../assets/rental_light.png';
+import rentalDark from '../assets/rental_dark.png';
 
 import LocalTaxiIcon from '@mui/icons-material/LocalTaxi';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
@@ -28,16 +32,16 @@ const items = [
         title: 'CARSHARING',
         description:
             'City carsharing — rent a car by the minute or hour. Perfect for business meetings, errands, or spontaneous trips.',
-        imageLight: taxiServiceLight,
-        imageDark: taxiServiceDark,
+        imageLight: carsharingLight,
+        imageDark: carsharingDark,
     },
     {
         icon: <EventAvailableIcon fontSize='large' />,
         title: 'RENTAL',
         description:
             'Long-term rental — flexible terms for those who value freedom. Choose a car for days, weeks, or months at a fixed price.',
-        imageLight: taxiServiceLight,
-        imageDark: taxiServiceDark,
+        imageLight: rentalLight,
+        imageDark: rentalDark,
     },
 ];
 

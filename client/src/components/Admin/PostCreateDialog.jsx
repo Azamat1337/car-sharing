@@ -44,14 +44,13 @@ export default function PostCreateDialog({ open, onClose }) {
 
     const handleCreate = () => {
         if (!title.trim() || !content.trim()) return;
-        const formData = new FormData();
-        formData.append('title', title.trim());
-        formData.append('excerpt', excerpt.trim());
-        formData.append('content', content.trim());
-        if (image) {
-            formData.append('img', image);
-        }
-        dispatch(addPostRequest(formData));
+
+        dispatch(addPostRequest({
+            title: title.trim(),
+            excerpt: excerpt.trim() || undefined,
+            content: content.trim(),
+            image: image
+        }));
     };
 
     const handleClose = () => {

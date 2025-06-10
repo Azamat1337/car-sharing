@@ -66,7 +66,6 @@ export default function CarEditDialog({ open, onClose, onSubmit, car, loading, e
     const handleSubmit = () => {
         const updateData = {};
 
-        // Только измененные поля
         if (formData.model !== car.model) updateData.model = formData.model;
         if (Number(formData.year) !== car.year) updateData.year = Number(formData.year);
         if (Number(formData.brandId) !== car.brandId) updateData.brandId = Number(formData.brandId);

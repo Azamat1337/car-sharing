@@ -11,18 +11,7 @@ export const carService = {
             .get(`/car/${id}`)
             .then(res => res.data),
 
-    create: ({ model, year, brandId, companyId, available = true, img, info, rentalType, dailyPrice, hourlyPrice }) => {
-        const formData = new FormData();
-        formData.append('model', model);
-        formData.append('year', year);
-        formData.append('brandId', brandId);
-        if (companyId) formData.append('companyId', companyId); // Добавляем companyId
-        formData.append('available', available);
-        if (img) formData.append('img', img);
-        if (info) formData.append('info', JSON.stringify(info));
-        if (rentalType) formData.append('rentalType', rentalType);
-        if (dailyPrice !== undefined) formData.append('dailyPrice', dailyPrice);
-        if (hourlyPrice !== undefined) formData.append('hourlyPrice', hourlyPrice);
+    create: (formData) => {
         return api
             .post('/car', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }

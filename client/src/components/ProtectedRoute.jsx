@@ -4,7 +4,6 @@ import { Navigate } from 'react-router';
 
 export default function ProtectedRoute({ children }) {
     const user = useSelector(state => state.user.profile);
-    const loading = useSelector(state => state.user.loading);
 
     if (user === null) {
         return null;

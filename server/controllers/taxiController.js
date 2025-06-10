@@ -48,7 +48,7 @@ class TaxiController {
     async changeStatus(req, res, next) {
         try {
             const { rideId } = req.params;
-            const { status } = req.body; // EXPECTED: 'APPROVED' or 'CANCELLED'
+            const { status } = req.body;
             const ride = await Ride.findByPk(rideId);
             if (!ride) throw ApiError.notFound('Ride not found');
             ride.status = status;
